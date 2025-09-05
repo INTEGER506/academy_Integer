@@ -11,13 +11,13 @@ public interface NotificationMapper {
     //새 알림 생성
     void insertNotification(Notification notification);
 
+    //알림 목록 조회
+    List<Notification> getNotificationsByUserId(@Param("targetId") Long targetId);
+
     //미확인 알림 개수 조회
-    int countUnresolved(@Param("targetId") Long targetId);
+    int countUnresolved(Long targetId);
 
     //알림 확인 상태로 업데이트
-    void markAsResolved(@Param("notiId") Long notiId);
-
-    //모든 알림 목록 조회
-    List<Notification> getNotificationsByUserId(@Param("targetId") Long targetId);
+    void markAsResolved(Long notiId);
 
 }
