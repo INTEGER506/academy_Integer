@@ -13,6 +13,6 @@ public class Notice {
     private Date endDate;   //종료일자
     private Date createdAt; //생성일
     private Date deadline;  //미리알림(연/월/일)
-    private int viewCount; //조회수
+    private int viewCount;  //조회수
     private int isUrgent;   //긴급공지 여부(1:긴급, 0:일반)
 }
