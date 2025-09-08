@@ -13,7 +13,6 @@ import java.util.List;
 public class NotificationServiceImpl implements NotificationService {
     private final NotificationMapper notificationMapper;
     private final UserMapper userMapper;
-    private final NotificationService notificationService;
 
     //생성
     @Override
