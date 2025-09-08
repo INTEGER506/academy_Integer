@@ -8,51 +8,73 @@
         <id property="id" column="id"/>
         <result property="place" column="place"/>
         <result property="dayOfWeek" column="day_of_week"/>
-        <result property="stratPeriod" column="strat_period"/>
-        <result property="endPeriod" column="end_period"/>
         <result property="capacity" column="capacity"/>
         <result property="semesterId" column="semester_id"/>
         <result property="subjectId" column="subject_id"/>
+        <result property="subjectCredits" column="subject_credit"/>
+        <result property="title" column="title"/>
+        <result property="department" column="department_name"/>
+        <result property="year" column="year"/>
+        <result property="description" column="description"/>
+        <result property="professorId" column="professor_id"/>
     </resultMap>
 
     <!-- 강의 개설 -->
-   <insert id="insert" parameterType="com.ac.kr.academy.domain.course.Course">
-       <selectKey keyProperty="id" order="BEFORE" resultType="long">
-           SELECT course_seq.NEXTVAL FROM dual
-       </selectKey>
-           INSERT INTO course (
-       id, place, day_of_week, strat_period, end_period, capacity, semester_id, subject_id
-       )
-            VALUES (
-       #{id}, #{place}, #{dayOfWeek}, #{stratPeriod}, #{endPeriod}, #{capacity}, #{semesterId}, #{subjectId}
-       )
-   </insert>
+    <insert id="insert" parameterType="com.ac.kr.academy.domain.course.Course">
+        <selectKey keyProperty="id" order="BEFORE" resultType="long">
+            SELECT course_seq.NEXTVAL FROM dual
+        </selectKey>
+        INSERT INTO course (
+        id, place, day_of_week, capacity, semester_id, subject_id,
+        title, department, year, description, professor_id
+        )
+        VALUES (
+        #{id}, #{place}, #{dayOfWeek},#{capacity}, #{semesterId}, #{subjectId},
+        #{title}, #{department}, #{year}, #{description}, #{professorId}
+        )
+    </insert>
 
     <!-- 강의 목록 조회 -->
-    <select id="findAll" resultType="CourseResultMap">
-        SELECT *
-        FROM course
-        WHERE course_id = #{courseId}
-        ORDER BY id DESC
+    <select id="findAll" resultMap="CourseResultMap">
+        SELECT c.*,
+        s.name AS semester_name,
+        sub.name AS subject_name,
+        sub.credit AS subject_credit,
+        u.name AS professor_name,
+        d.name AS department_name
+        FROM course c
+        LEFT JOIN semester s ON c.semester_id = s.id
+        LEFT JOIN subject sub ON c.subject_id = sub.id
+        LEFT JOIN professor p ON c.professor_id = p.id
+        LEFT JOIN users u ON p.user_id = u.id
+        LEFT JOIN dept d ON sub.dept_id = d.id
+        <where>
+            <if test="keyword != null and keyword != ''">
+                (c.title LIKE '%' || #{keyword} || '%'
+                OR d.name LIKE '%' || #{keyword} || '%')
+            </if>
+        </where>
+        ORDER BY c.id DESC
     </select>
 
     <!-- 강의 단건 조회 -->
     <select id="findById" resultMap="CourseResultMap">
-        SELECT c.*, subject_id AS subject_name
+        SELECT c.*
         FROM course c
-            JOIN subject s ON c.subject_id = s.id
         WHERE c.id = #{id}
     </select>
 
     <!-- 강의 수정 -->
-    <update id="update">
+    <update id="update" parameterType="com.ac.kr.academy.domain.course.Course">
         UPDATE course
-        SET course = #{course}
+        SET place = #{place}, day_of_week = #{dayOfWeek},capacity = #{capacity}, semester_id = #{semesterId},
+            subject_id = #{subjectId},title = #{title}, department = #{department}, year = #{year},
+            description = #{description}, professor_id = #{professorId}
         WHERE id = #{id}
     </update>
 
     <!-- 강의 삭제 -->
-    <delete id="delete">
+    <delete id="delete" parameterType="long">
         DELETE FROM course WHERE id = #{id}
     </delete>
 </mapper>

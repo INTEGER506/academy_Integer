@@ -19,5 +19,5 @@ public interface CourseMapper {
 
     void update(Course course);
 
-    void delete(Course course);
+    void delete(Long id);
 }
