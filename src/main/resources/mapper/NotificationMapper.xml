@@ -38,4 +38,10 @@
         WHERE noti_id = #{notiId}
     </update>
 
+    <!-- 읽은 알림 전체 삭제 -->
+    <delete id="deleteResolved">
+        DELETE FROM notification
+        WHERE is_resolved = 1
+    </delete>
+
 </mapper>

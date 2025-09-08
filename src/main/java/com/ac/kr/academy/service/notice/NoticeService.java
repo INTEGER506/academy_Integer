@@ -15,7 +15,7 @@ public interface NoticeService {
     Notice getNoticeDetail(Long id);
 
     //수정
-    void editNotece(Notice notice);
+    void editNotice(Notice notice);
 
     //삭제
     void removeNotice(Long id);
