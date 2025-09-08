@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>학사정보관리시스템 - 학사일정</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"/>
+  <link rel="stylesheet" href="style/style.css"/>
+</head>
+<body class="bg-page">
+  <!-- Header (공통) -->
+  <header class="app-header bg-header border-bottom">
+    <div class="container-1200 d-flex align-items-center gap-3">
+      <div class="me-auto">
+        <div class="brand-title">학사정보관리시스템</div>
+        <div class="brand-sub">University Management System</div>
+      </div>
+
+      <div class="header-search mx-auto">
+        <i class="bi bi-search"></i>
+        <input type="text" placeholder="검색어를 입력하세요" />
+      </div>
+
+      <div class="d-flex align-items-center gap-2">
+        <button class="icon-pill" title="알림">
+          <i class="bi bi-bell"></i>
+          <span class="badge-dot">2</span>
+        </button>
+        <a href="login.html" class="btn btn-white rounded-pill h-40 px-3 d-flex align-items-center gap-1">
+          <i class="bi bi-box-arrow-right"></i>
+          <span>로그아웃</span>
+        </a>
+        <div class="btn btn-white rounded-pill h-40 px-2 d-flex align-items-center gap-2">
+          <div class="avatar">U</div>
+          <div class="text-start lh-1">
+            <div class="text-navy fw-600 small">관리자</div>
+            <div class="text-gray-500 xsmall">Admin</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="py-4">
+    <div class="container-1200 d-flex gap-24">
+      <!-- Sidebar -->
+      <aside class="sidebar card-white">
+        <div class="menu-cap">MENU</div>
+        <ul class="menu-list">
+          <li><a href="index.html">대시보드</a></li>
+          <li><a class="active" href="#">학사일정</a></li>
+          <li><a href="#">알림센터</a></li>
+          <li><a href="#">공지 관리</a></li>
+          <li><a href="#">사용자 관리</a></li>
+          <li><a href="#">강좌 관리</a></li>
+          <li><a href="#">성적 관리</a></li>
+          <li><a href="#">졸업심사</a></li>
+          <li><a href="#">설정</a></li>
+        </ul>
+      </aside>
+
+      <!-- Content -->
+      <section class="flex-1 d-flex gap-24">
+        <!-- 달력 -->
+        <div class="card-white p-20 flex-1">
+          <div class="d-flex justify-content-between align-items-center mb-16">
+            <div class="fw-700 fs-18">2025년 9월</div>
+            <div class="d-flex align-items-center gap-16 xsmall text-gray-600">
+              <a href="#" class="text-navy">이전</a>
+              <a href="#" class="text-navy">오늘</a>
+              <a href="#" class="text-navy">다음</a>
+            </div>
+          </div>
+
+          <!-- 간단 월 달력 (정적) -->
+          <div class="calendar-grid">
+            <!-- 요일 -->
+            <div class="calendar-head">일</div>
+            <div class="calendar-head">월</div>
+            <div class="calendar-head">화</div>
+            <div class="calendar-head">수</div>
+            <div class="calendar-head">목</div>
+            <div class="calendar-head">금</div>
+            <div class="calendar-head">토</div>
+            <!-- 날짜 (예시) -->
+            <div class="calendar-cell muted">31</div>
+            <div class="calendar-cell">1</div>
+            <div class="calendar-cell">2</div>
+            <div class="calendar-cell">3</div>
+            <div class="calendar-cell">4</div>
+            <div class="calendar-cell">5</div>
+            <div class="calendar-cell blue">6</div>
+
+            <div class="calendar-cell red">7</div>
+            <div class="calendar-cell selected">8</div>
+            <div class="calendar-cell">9</div>
+            <div class="calendar-cell">10</div>
+            <div class="calendar-cell">11</div>
+            <div class="calendar-cell">12</div>
+            <div class="calendar-cell blue">13</div>
+
+            <div class="calendar-cell red">14</div>
+            <div class="calendar-cell">15</div>
+            <div class="calendar-cell">16</div>
+            <div class="calendar-cell">17</div>
+            <div class="calendar-cell">18</div>
+            <div class="calendar-cell">19</div>
+            <div class="calendar-cell blue">20</div>
+
+            <div class="calendar-cell red">21</div>
+            <div class="calendar-cell">22</div>
+            <div class="calendar-cell">23</div>
+            <div class="calendar-cell">24</div>
+            <div class="calendar-cell">25</div>
+            <div class="calendar-cell">26</div>
+            <div class="calendar-cell blue">27</div>
+
+            <div class="calendar-cell red">28</div>
+            <div class="calendar-cell">29</div>
+            <div class="calendar-cell">30</div>
+            <div class="calendar-cell muted">1</div>
+            <div class="calendar-cell muted">2</div>
+            <div class="calendar-cell muted">3</div>
+            <div class="calendar-cell muted">4</div>
+          </div>
+        </div>
+
+        <!-- 일정 패널 -->
+        <aside class="card-white p-20 w-320">
+          <div class="fw-700 mb-8">이번 달 일정</div>
+          <div class="xsmall text-gray-500">등록된 일정이 없습니다.</div>
+        </aside>
+      </section>
+    </div>
+  </main>
+
+  <footer class="app-footer">
+    <div class="container-1200 d-flex justify-content-between align-items-center">
+      <p class="xsmall text-gray-500 mb-0">© 2025 Goott Academy. All rights reserved.</p>
+      <span class="xsmall text-gray-400">v1.0.0</span>
+    </div>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>학사정보관리시스템</title>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <!-- Bootstrap & Icons (CDN) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"/>
+
+  <!-- App CSS -->
+  <link rel="stylesheet" href="style/style.css"/>
+</head>
+<body class="bg-page">
+
+  <!-- Header -->
+  <header class="app-header bg-header border-bottom">
+    <div class="container-1200 d-flex align-items-center gap-3">
+      <!-- 좌: 로고 -->
+      <div class="me-auto">
+        <div class="brand-title">학사정보관리시스템</div>
+        <div class="brand-sub">University Management System</div>
+      </div>
+
+      <!-- 중앙: 검색 -->
+      <div class="header-search mx-auto">
+        <i class="bi bi-search"></i>
+        <input type="text" placeholder="검색어를 입력하세요" />
+      </div>
+
+      <!-- 우: 알림 / 로그아웃 / 프로필 -->
+      <div class="d-flex align-items-center gap-2">
+        <button class="icon-pill" title="알림">
+          <i class="bi bi-bell"></i>
+          <span class="badge-dot"></span>
+        </button>
+
+        <a href="login.html" class="btn btn-white rounded-pill h-40 px-3 d-flex align-items-center gap-1">
+          <i class="bi bi-box-arrow-right"></i>
+          <span>로그아웃</span>
+        </a>
+
+        <div class="btn btn-white rounded-pill h-40 px-2 d-flex align-items-center gap-2">
+          <div class="avatar">U</div>
+          <div class="text-start lh-1">
+            <div class="text-navy fw-600 small">관리자</div>
+            <div class="text-gray-500 xsmall">Admin</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="py-4">
+    <div class="container-1200 d-flex gap-24">
+      <!-- Sidebar -->
+      <aside class="sidebar card-white">
+        <div class="menu-cap">MENU</div>
+        <ul class="menu-list">
+          <li><a class="active" href="#">대시보드</a></li>
+          <li><a href="#">알림센터</a></li> <!-- notification -->
+          <li><a href="#">공지 관리</a></li> <!--notice  -->
+          <li><a href="#">사용자 관리</a></li> <!-- users -->
+          <li><a href="#">강좌 관리</a></li> <!-- course -->
+          <li><a href="#">성적 관리</a></li> <!--grade -->
+          <li><a href="#">졸업심사</a></li> <!-- graduations -->
+          <li><a href="calendar.html">학사일정</a></li>
+          <li><a href="#">설정</a></li><!--  -->
+        </ul>
+      </aside>
+
+      <!-- Content -->
+      <section class="flex-1 d-flex flex-column gap-24">
+        <!-- KPI -->
+        <div class="row g-3">
+          <div class="col-12 col-md-6 col-lg-3">
+            <div class="card-white p-20">
+              <div class="text-gray-600 xsmall mb-1">재학생 수</div>
+              <div class="fs-24 fw-700">000</div>
+              <div class="xsmall text-gray-500 mt-2">업데이트: YYYY-MM-DD</div>
+            </div>
+        </div> 
+          <div class="col-12 col-md-6 col-lg-3">
+            <div class="card-white p-20">
+              <div class="text-gray-600 xsmall mb-1">수강 신청</div>
+              <div class="fs-24 fw-700">000</div>
+              <div class="xsmall text-gray-500 mt-2">업데이트: YYYY-MM-DD</div>
+            </div>
+          </div>
+          <div class="col-12 col-md-6 col-lg-3">
+            <div class="card-white p-20">
+              <div class="text-gray-600 xsmall mb-1">성적 처리</div>
+              <div class="fs-24 fw-700">000</div>
+              <div class="xsmall text-gray-500 mt-2">업데이트: YYYY-MM-DD</div>
+            </div>
+          </div>
+          <div class="col-12 col-md-6 col-lg-3">
+            <div class="card-white p-20">
+              <div class="text-gray-600 xsmall mb-1">공지/알림</div>
+              <div class="fs-24 fw-700">000</div>
+              <div class="xsmall text-gray-500 mt-2">업데이트: YYYY-MM-DD</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 상단 2열 -->
+        <div class="row g-3">
+          <div class="col-12 col-lg-8">
+            <div class="card-white p-20 h-320">
+              <div class="d-flex justify-content-between align-items-center mb-12">
+                <div class="fw-700">학기별 수강 현황</div>
+                <div class="xsmall text-gray-500">미리보기</div>
+              </div>
+              <div class="chart-placeholder"></div>
+            </div>
+          </div>
+
+          <div class="col-12 col-lg-4">
+            <div class="card-white p-20 h-320">
+              <div class="d-flex justify-content-between align-items-center mb-12">
+                <div class="fw-700">공지사항</div>
+                <a href="#" class="xsmall text-navy">더보기</a>
+              </div>
+              <ul class="notice-list">
+                <li><span class="truncate">[공지] 제목 예시 1</span><span class="xsmall text-gray-500">2025-09-08</span></li>
+                <li><span class="truncate">[공지] 제목 예시 2</span><span class="xsmall text-gray-500">2025-09-08</span></li>
+                <li><span class="truncate">[공지] 제목 예시 3</span><span class="xsmall text-gray-500">2025-09-08</span></li>
+                <li><span class="truncate">[공지] 제목 예시 4</span><span class="xsmall text-gray-500">2025-09-08</span></li>
+                <li><span class="truncate">[공지] 제목 예시 5</span><span class="xsmall text-gray-500">2025-09-08</span></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- 하단 테이블 -->
+        <div class="card-white p-20">
+          <div class="d-flex justify-content-between align-items-center mb-12">
+            <div class="fw-700">수강/성적 처리 현황</div>
+            <div class="xsmall text-gray-500">표(디자인 전용)</div>
+          </div>
+
+          <div class="table-wrap">
+            <table class="table align-middle">
+              <thead>
+                <tr>
+                  <th>구분</th>
+                  <th>학과</th>
+                  <th>상태</th>
+                  <th>업데이트</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- 반복 예시 -->
+                <tr>
+                  <td>항목 1</td>
+                  <td>컴퓨터공학과</td>
+                  <td><span class="pill pill-navy">진행</span></td>
+                  <td>2025-09-08</td>
+                </tr>
+                <tr>
+                  <td>항목 2</td>
+                  <td>컴퓨터공학과</td>
+                  <td><span class="pill pill-navy">진행</span></td>
+                  <td>2025-09-08</td>
+                </tr>
+                <tr>
+                  <td>항목 3</td>
+                  <td>컴퓨터공학과</td>
+                  <td><span class="pill pill-navy">진행</span></td>
+                  <td>2025-09-08</td>
+                </tr>
+                <tr>
+                  <td>항목 4</td>
+                  <td>컴퓨터공학과</td>
+                  <td><span class="pill pill-navy">진행</span></td>
+                  <td>2025-09-08</td>
+                </tr>
+                <tr>
+                  <td>항목 5</td>
+                  <td>컴퓨터공학과</td>
+                  <td><span class="pill pill-navy">진행</span></td>
+                  <td>2025-09-08</td>
+                </tr>
+                <tr>
+                  <td>항목 6</td>
+                  <td>컴퓨터공학과</td>
+                  <td><span class="pill pill-navy">진행</span></td>
+                  <td>2025-09-08</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </section>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    <div class="container-1200 d-flex justify-content-between align-items-center">
+      <p class="xsmall text-gray-500 mb-0">© 2025 Goott Academy. All rights reserved.</p>
+      <span class="xsmall text-gray-400">v1.0.0</span>
+    </div>
+  </footer>
+
+</body>
+</html>
