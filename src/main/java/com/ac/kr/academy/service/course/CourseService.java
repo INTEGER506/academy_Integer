@@ -1,20 +1,20 @@
 package com.ac.kr.academy.service.course;
 
 
-import com.ac.kr.academy.dto.course.CourseRequestDTO;
-import com.ac.kr.academy.dto.course.CourseResponseDTO;
+import com.ac.kr.academy.dto.course.CourseCreateRequestDTO;
+import com.ac.kr.academy.dto.course.CourseListResponseDTO;
 
 import java.util.List;
 
 public interface CourseService {
 
-    void addCourse(CourseRequestDTO courseRequestDTO, Long userId);
+    void addCourse(CourseCreateRequestDTO courseRequestDTO, Long userId);
 
-    List<CourseResponseDTO> findAll(String keyword, String type);
+    List<CourseListResponseDTO> findAll(String keyword, String type);
 
-    CourseResponseDTO findById(Long id);
+    CourseListResponseDTO findById(Long id);
 
-    void update(CourseRequestDTO courseRequestDTO,Long id, Long userId);
+    void update(CourseCreateRequestDTO courseRequestDTO, Long id, Long userId);
 
     void delete(Long id, Long userId);
 

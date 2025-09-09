@@ -10,6 +10,8 @@ public interface ProfessorMapper {
 
     Professor findById(Long id);
 
+    Professor findByUserId(Long userId);
+
     void update(Professor professor);
 
     void deleteById(Long id);

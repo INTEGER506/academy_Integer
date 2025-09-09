@@ -4,77 +4,101 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.ac.kr.academy.mapper.course.CourseMapper">
-    <resultMap id="CourseResultMap" type="com.ac.kr.academy.domain.course.Course">
-        <id property="id" column="id"/>
+    <resultMap id="CourseListResponseMap" type="com.ac.kr.academy.dto.course.CourseListResponseDTO">
+        <id property="courseId" column="course_id"/>
         <result property="place" column="place"/>
         <result property="dayOfWeek" column="day_of_week"/>
         <result property="capacity" column="capacity"/>
-        <result property="semesterId" column="semester_id"/>
-        <result property="subjectId" column="subject_id"/>
-        <result property="subjectCredits" column="subject_credit"/>
-        <result property="title" column="title"/>
-        <result property="department" column="department_name"/>
-        <result property="year" column="year"/>
-        <result property="description" column="description"/>
-        <result property="professorId" column="professor_id"/>
+        <result property="status" column="status"/>
+
+        <association property="subject" javaType="com.ac.kr.academy.domain.subject.Subject">
+            <id property="id" column="subject_id"/>
+            <result property="name" column="subject_name"/>
+            <result property="credit" column="credit"/>
+        </association>
+
+        <association property="professor" javaType="com.ac.kr.academy.domain.professor.Professor">
+            <id property="id" column="professor_id"/>
+            <result property="professorNum" column="professor_num"/>
+        </association>
+
+        <association property="semester" javaType="com.ac.kr.academy.domain.semester.Semester">
+            <id property="id" column="semester_id"/>
+            <result property="name" column="semester_name"/>
+            <result property="year" column="semester_year"/>
+        </association>
+        
+        <association property="dept" javaType="com.ac.kr.academy.domain.dept.Dept">
+            <id property="id" column="dept_id"/>
+            <result property="deptName" column="dept_name"/>
+        </association>
     </resultMap>
 
     <!-- 강의 개설 -->
-    <insert id="insert" parameterType="com.ac.kr.academy.domain.course.Course">
+    <insert id="insert">
         <selectKey keyProperty="id" order="BEFORE" resultType="long">
             SELECT course_seq.NEXTVAL FROM dual
         </selectKey>
         INSERT INTO course (
-        id, place, day_of_week, capacity, semester_id, subject_id,
-        title, department, year, description, professor_id
+        id, professor_id, subject_id, semester_id, capacity, day_of_week, place, status
         )
         VALUES (
-        #{id}, #{place}, #{dayOfWeek},#{capacity}, #{semesterId}, #{subjectId},
-        #{title}, #{department}, #{year}, #{description}, #{professorId}
+        #{id}, #{professorId}, #{subjectId}, #{semesterId}, #{capacity}, #{dayOfWeek}, #{place}, #{status}
         )
     </insert>
 
     <!-- 강의 목록 조회 -->
-    <select id="findAll" resultMap="CourseResultMap">
-        SELECT c.*,
-        s.name AS semester_name,
-        sub.name AS subject_name,
-        sub.credit AS subject_credit,
-        u.name AS professor_name,
-        d.name AS department_name
+    <select id="findAll" resultMap="CourseListResponseMap">
+        SELECT
+            c.id AS course_id, c.place, c.day_of_week, c.capacity, c.status,
+            s.id AS subject_id, s.name AS subject_name, s.credit, s.description AS subject_description,
+            p.id AS professor_id, p.professor_num,
+            sem.id AS semester_id, sem.name AS semester_name, sem.year AS semester_year,
+            d.id AS dept_id, d.dept_name
         FROM course c
-        LEFT JOIN semester s ON c.semester_id = s.id
-        LEFT JOIN subject sub ON c.subject_id = sub.id
-        LEFT JOIN professor p ON c.professor_id = p.id
-        LEFT JOIN users u ON p.user_id = u.id
-        LEFT JOIN dept d ON sub.dept_id = d.id
+        JOIN subject s ON c.subject_id = s.id
+        JOIN professor p ON c.professor_id = p.id
+        JOIN semester sem ON c.semester_id = sem.id
+        JOIN dept d ON s.dept_id = d.id
         <where>
             <if test="keyword != null and keyword != ''">
-                (c.title LIKE '%' || #{keyword} || '%'
-                OR d.name LIKE '%' || #{keyword} || '%')
+                s.name LIKE '%' || #{keyword} || '%'
+                OR d.dept_name LIKE '%' || #{keyword} || '%'
             </if>
         </where>
         ORDER BY c.id DESC
     </select>
 
     <!-- 강의 단건 조회 -->
-    <select id="findById" resultMap="CourseResultMap">
-        SELECT c.*
+    <select id="findById" resultMap="CourseListResponseMap">
+        SELECT
+            c.id AS course_id, c.place, c.day_of_week, c.capacity, c.status,
+            s.id AS subject_id, s.name AS subject_name, s.credit, s.description AS subject_description,
+            p.id AS professor_id, p.professor_num,
+            sem.id AS semester_id, sem.name AS semester_name, sem.year AS semester_year,
+            d.id AS dept_id, d.dept_name
         FROM course c
+        JOIN subject s ON c.subject_id = s.id
+        JOIN professor p ON c.professor_id = p.id
+        JOIN semester sem ON c.semester_id = sem.id
+        JOIN dept d ON s.dept_id = d.id
         WHERE c.id = #{id}
     </select>
 
     <!-- 강의 수정 -->
-    <update id="update" parameterType="com.ac.kr.academy.domain.course.Course">
+    <update id="update">
         UPDATE course
-        SET place = #{place}, day_of_week = #{dayOfWeek},capacity = #{capacity}, semester_id = #{semesterId},
-            subject_id = #{subjectId},title = #{title}, department = #{department}, year = #{year},
-            description = #{description}, professor_id = #{professorId}
+        <set>
+            <if test="capacity != null">capacity = #{capacity}</if>
+            <if test="dayOfWeek != null">day_of_week = #{dayOfWeek}</if>
+            <if test="place != null">place = #{place}</if>
+            <if test="status != null">status = #{status}</if>
+        </set>
         WHERE id = #{id}
     </update>
 
     <!-- 강의 삭제 -->
-    <delete id="delete" parameterType="long">
+    <delete id="delete">
         DELETE FROM course WHERE id = #{id}
     </delete>
 </mapper>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ac.kr.academy.mapper.subject.SubjectMapper">
+
+    <!-- 과목 등록 -->
+    <insert id="insert">
+        <selectKey keyProperty="id" order="BEFORE" resultType="long">
+            SELECT subject_seq.NEXTVAL FROM dual
+        </selectKey>
+            INSERT INTO subject(
+            id, name, credit, description, professor_id, dept_id
+        )
+            VALUES(
+            #{id}, #{name}, #{credit}, #{description}, #{professorId}, #{deptId}
+        )
+    </insert>
+
+    <!-- 과목 전체 조회 -->
+    <select id="findAll" resultType="com.ac.kr.academy.domain.subject.Subject">
+        SELECT
+            id, name, credit, description, professor_id AS professorId, dept_id AS deptId
+        FROM subject
+        ORDER BY id desc
+    </select>
+
+    <!-- 과목 단건 조회 -->
+    <select id="findById" resultType="com.ac.kr.academy.domain.subject.Subject">
+        SELECT
+            id, name, credit, description, professor_id AS professorId, dept_id AS deptId
+        FROM subject
+        WHERE id = #{id}
+    </select>
+
+    <!-- 과목 수정 -->
+    <update id="update" parameterType="com.ac.kr.academy.domain.subject.Subject">
+        UPDATE subject
+        <set>
+            <if test="name != null">name = #{name},</if>
+            <if test="credit != null">credit = #{credit},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="deptId != null">dept_id = #{deptId}</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!-- 과목 삭제 -->
+    <delete id="deleteById">
+        DELETE FROM subject WHERE id = #{id}
+    </delete>
+</mapper>
