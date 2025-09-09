@@ -13,7 +13,6 @@ import java.util.List;
 public class NotificationServiceImpl implements NotificationService {
     private final NotificationMapper notificationMapper;
     private final UserMapper userMapper;
-    private final NotificationService notificationService;
 
     //생성
     @Override
@@ -45,7 +44,7 @@ public class NotificationServiceImpl implements NotificationService {
     //긴급(중요) 공지 알림 모든 사용자에게 생성(발송)
     @Override
     public void sendAllUser(Long noticeId, String noticeTitle) {
-        List<Long> allUserId = userMapper.findAllUsersId();
+        List<Long> allUserId = userMapper.findAllUserIds();
 
         for(Long userId : allUserId){
             Notification notification = new Notification();

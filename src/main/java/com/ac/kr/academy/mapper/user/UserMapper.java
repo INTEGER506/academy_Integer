@@ -6,9 +6,6 @@ import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
-/**
- * 긴급공지 전체 사용자 알림 때문에 임시 생성 / 성적
- * */
 @Mapper
 public interface UserMapper {
 
@@ -19,12 +16,16 @@ public interface UserMapper {
     int updateUser(User user);
 
     //전체 사용자 조회
-    List<Long> findAllUsersId();
+    List<Long> findAllUserIds();
 
-    //사용자 조회
+    //ID로 사용자 조회
     User findById(Long id);
 
-    //권한에 따라 사용자 조회
+    //권한에 따라 사용자 조회 (알림용)
     List<Long> findAllUsersByRole(@Param("role") String role);
+
+
+    //사용자 정보와 권한 조회 (로그인용) -> email 컬럼 사용
+    User findByUsername(String username);
 
 }
