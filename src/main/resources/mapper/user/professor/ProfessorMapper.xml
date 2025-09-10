@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ac.kr.academy.mapper.user.professor.ProfessorMapper">
+    <insert id="insertProfessor" parameterType="com.ac.kr.academy.domain.user.Professor">
+        <selectKey keyProperty="id" order="BEFORE" resultType="long">
+            SELECT professor_seq.NEXTVAL FROM dual
+        </selectKey>
+        INSERT INTO professor (id, professor_num, created_at, dept_id, user_id)
+        VALUES (#{id}, #{professorNum}, SYSDATE, #{deptId}, #{userId})
+    </insert>
+
+    <update id="updateProfessor" parameterType="com.ac.kr.academy.domain.user.Professor">
+        UPDATE professor
+        SET ended_at = #{endedAt},
+            dept_id = #{deptId}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteProfessor" parameterType="long">
+        DELETE FROM professor
+        WHERE id = #{id}
+    </delete>
+
+    <select id="findAllProfessors" resultType="com.ac.kr.academy.domain.user.Professor">
+        SELECT p.*, u.username, u.email, u.phone, u.name, u.role
+        FROM professor p
+        JOIN users u ON p.user_id = u.id
+    </select>
+
+    <select id="findById" parameterType="long" resultType="com.ac.kr.academy.domain.user.Professor">
+        SELECT p.*, u.username, u.email, u.phone, u.name, u.role
+        FROM professor p
+        JOIN users u ON p.user_id = u.id
+        WHERE p.id = #{id}
+    </select>
+
+    <select id="findByProfessorNum" parameterType="string" resultType="com.ac.kr.academy.domain.user.Professor">
+        SELECT p.*, u.username, u.email, u.phone, u.name, u.role
+        FROM professor p
+        JOIN users u ON p.user_id = u.id
+        WHERE p.professor_num = #{professorNum}
+    </select>
+
+</mapper>
