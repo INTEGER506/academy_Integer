@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ac.kr.academy.mapper.user.student.StudentMapper">
+    <insert id="insertStudent" parameterType="com.ac.kr.academy.domain.user.Student">
+        <selectKey keyProperty="id" order="BEFORE" resultType="long">
+            SELECT student_seq.NEXTVAL FROM dual
+        </selectKey>
+        INSERT INTO student (id, student_num, created_at, dept_id, user_id)
+        VALUES (#{id, #{studentNum}, #{status}, SYSDATE, #{deptId}, #{userId})
+    </insert>
+
+    <update id="updateStudent" parameterType="com.ac.kr.academy.domain.user.Student">
+        UPDATE student
+        SET status = #{status},
+            ended_at = #{endedAt},
+            dept_id = #{deptId}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteStudent" parameterType="long">
+        DELETE FROM student
+        WHERE id = #{id}
+    </delete>
+
+
+    <select id="findAllStudents" parameterType="com.ac.kr.academy.domain.user.Student">
+        SELECT s.*, u.username, u.email, u.phone, u.role
+        FROM student s
+        JOIN users u ON s.user_id = u.id
+    </select>
+
+    <select id="findById" parameterType="long" resultType="com.ac.kr.academy.domain.user.Student">
+        SELECT s.*, u.username, u.email, u.phone, u.role
+        FROM student s
+        JOIN users u ON s.user_id = u.id
+        WHERE s.id = #{id}
+    </select>
+
+    <select id="findStudentNum" parameterType="string" resultType="com.ac.kr.academy.domain.user.Student">
+        SELECT s.*, u.username, u.email, u.phone, u.role
+        FROM student s
+        JOIN users u ON s.user_id = u.id
+        WHERE s.student_num = #{studentNum}
+    </select>
+
+</mapper>

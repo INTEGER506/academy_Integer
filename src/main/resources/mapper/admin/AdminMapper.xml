@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 로그인 ID 자동생성 매퍼 -->
+<mapper namespace="com.ac.kr.academy.mapper.admin.AdminMapper">
+    <update id="incrementSequence">
+        UPDATE id_sequence
+        SET sequence_num = sequence_num + 1
+        WHERE sequence_key = #{sequenceKey}
+    </update>
+
+    <select id="findSequenceNum" resultType="int">
+        SELECT sequence_num
+        FROM id_sequence
+        WHERE sequence_key = #{sequenceKey}
+    </select>
+</mapper>

@@ -1,5 +1,6 @@
 package com.ac.kr.academy.security.jwt;
 
+import com.ac.kr.academy.security.CustomUserDetails;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
@@ -63,10 +64,18 @@ public class JwtTokenProvider { //토큰 생성, 유효성 검증, 토큰에서 
         //설정에 넣은 값을 토큰 생성 시 만료일(expiry) 계산에 사용
         Date expiry = new Date(now.getTime() + validitySeconds * 1000);
 
+        //클레임 생성
+        Claims claims = Jwts.claims().setSubject(authentication.getName());
+        claims.put("authorities", authentication.getAuthorities()); //권한을 커스텀 클레임으로 저장
+
+        if(!isRefresh){     //access 토큰일때만 임시 비번 클레임 추가
+            CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+            claims.put("isTempPassword", userDetails.getUser().isPasswordTemp());
+        }
+
         //토큰 빌더
         return Jwts.builder()
-                .setSubject(authentication.getName())
-                .claim("authorities", authentication.getAuthorities())  //권한을 커스텀 클레임으로 저장
+                .setClaims(claims)      //클레임 한번에 설정
                 .setIssuedAt(now)       //발급 시각
                 .setExpiration(expiry)  //만료 시각
                 .signWith(secretKey, SignatureAlgorithm.HS512)  //HS512 알고리즘으로 서명

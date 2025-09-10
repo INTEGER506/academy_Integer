@@ -8,8 +8,8 @@
         <selectKey keyProperty="id" order="BEFORE" resultType="long">
             SELECT user_seq.NEXTVAL FROM dual
         </selectKey>
-        INSERT INTO users (id, username, email, password, phone, name, role)
-        VALUES (#{id}, #{username}, #{email}, #{password}, #{phone}, #{name}, #{role})
+        INSERT INTO users (id, username, password_temp, email, password, phone, name, role)
+        VALUES (#{id}, #{username}, #{passwordTemp}, #{email}, #{password}, #{phone}, #{name}, #{role})
     </insert>
 
     <update id="updateUser" parameterType="com.ac.kr.academy.domain.user.User">
@@ -21,6 +21,10 @@
             role = #{role}
         WHERE id = #{id}
     </update>
+
+    <delete id="deleteUser">
+        DELETE FROM users WHERE id = #{id}
+    </delete>
 
     <select id="findAllUserIds" resultType="long">
         SELECT id FROM users
@@ -40,5 +44,18 @@
         SELECT * FROM users
         WHERE username = #{username}
     </select>
+
+    <update id="updateUserPassword">
+        UPDATE users
+        SET password = #{password},
+            password_temp = #{passwordTemp}
+        WHERE username = #{username}
+    </update>
+    
+    <update id="updateUsername">
+        UPDATE users
+        SET username = #{username}
+        WHERE id = #{id}
+    </update>
 
 </mapper>

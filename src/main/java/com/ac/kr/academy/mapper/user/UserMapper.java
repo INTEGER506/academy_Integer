@@ -9,11 +9,11 @@ import java.util.List;
 @Mapper
 public interface UserMapper {
 
-    //등록
-    int insertUser(User user);
+    void insertUser(User user);
 
-    //수정
-    int updateUser(User user);
+    void updateUser(User user);
+
+    void deleteUser(Long id);
 
     //전체 사용자 조회
     List<Long> findAllUserIds();
@@ -25,7 +25,14 @@ public interface UserMapper {
     List<Long> findAllUsersByRole(@Param("role") String role);
 
 
-    //사용자 정보와 권한 조회 (로그인용) -> email 컬럼 사용
-    User findByUsername(String username);
+    //사용자 정보와 권한 조회 (로그인용)
+    User findByUsername(@Param("username") String username);
 
+    //비밀번호 초기화를 위한 메서드
+    void updateUserPassword(@Param("username") String username,
+                            @Param("password") String password,
+                            @Param("passwordTemp") boolean passwordTemp);
+
+    //AdminRestController 로그인 ID 자동생성에서 사용
+    int updateUsername(@Param("id") Long id, @Param("username") String username);
 }
