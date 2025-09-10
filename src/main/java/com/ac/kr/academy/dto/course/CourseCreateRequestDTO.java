@@ -31,6 +31,8 @@ public class CourseCreateRequestDTO {
     @NotBlank(message = "요일은 필수 입력값입니다.")
     private String dayOfWeek;
 
+    private String time;
+
     @NotNull(message = "학기 ID는 필수 입력값입니다.")
     private Long semesterId;
 

@@ -16,8 +16,9 @@ public class Course {
     private Long subjectId;
     private Long semesterId;
     private Integer capacity;
-    private Integer numOfStudents;
+    private Integer numOfStudent;
     private String dayOfWeek;
     private String place;
     private String status; //강의 상태
+    private String time;
 }

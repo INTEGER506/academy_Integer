@@ -17,6 +17,7 @@ public class CourseListResponseDTO {
     private String place;
     private String dayOfWeek;
     private Integer capacity;
+    private String time;
     private Subject subject;
     private Professor professor;
     private Semester semester;
