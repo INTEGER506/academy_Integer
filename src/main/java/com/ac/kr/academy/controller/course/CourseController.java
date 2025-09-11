@@ -27,19 +27,19 @@ public class CourseController {
             Model model) {
         List<CourseListResponseDTO> courseList = courseService.findAll(keyword, type);
         model.addAttribute("courseList", courseList);
-        return "course/List";
+        return "course/list";
     }
 
     @GetMapping("/{id}")
     public String getCourseById(@PathVariable Long id, Model model) {
         CourseListResponseDTO course = courseService.findById(id);
         model.addAttribute("course", course);
-        return "course/Detail";
+        return "course/detail";
     }
 
     @GetMapping("/create")
     public String createForm() {
-        return "course/Create";
+        return "course/create";
     }
 
     @PostMapping

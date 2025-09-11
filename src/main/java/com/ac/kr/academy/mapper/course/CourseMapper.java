@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 @Mapper
 public interface CourseMapper {
@@ -19,7 +20,7 @@ public interface CourseMapper {
 
     List<CourseListResponseDTO> findAllByDeptName(@Param("keyword") String keyword);
 
-    Course findById(Long id);
+    Optional<Course> findById(Long id);
 
     void update(Course course);
 
@@ -28,6 +29,13 @@ public interface CourseMapper {
     boolean existsByDayOfWeekAndPlaceAndTime(@Param("dayOfWeek") String dayOfWeek,
                                              @Param("place") String place,
                                              @Param("time") String time);
+
+    // 강의의 현재 수강 인원 수 업데이트
+    void updateNumOfStudent(@Param("id") Long id,
+                            @Param("numOfStudent")
+                            int numOfStudent);
+    // 특정 강의의 학점만 조회
+    int findCreditByCourseId(Long courseId);
 
 
 }

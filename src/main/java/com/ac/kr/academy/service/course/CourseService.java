@@ -19,4 +19,6 @@ public interface CourseService {
 
     void delete(Long id, Long userId);
 
+    void closeCourse(Long courseId, Long userId);
+
 }

@@ -10,11 +10,11 @@
         <selectKey keyProperty="id" order="BEFORE" resultType="long">
             SELECT enrollment_seq.NEXTVAL FROM dual
         </selectKey>
-            INSERT INTO enrollment (
-            id, course_id, student_id
+        INSERT INTO enrollment (
+        id, course_id, student_id
         )
-            VALUES (
-            #{id}, #{courseId}, #{studentId}
+        VALUES (
+        #{id}, #{courseId}, #{studentId}
         )
     </insert>
 
@@ -26,35 +26,57 @@
     </select>
 
     <!-- 수강 인원 -->
-    <select id="countStudentByIdCourseId" resultType="int">
+    <select id="countStudentsByCourseId" resultType="int">
         SELECT COUNT(*)
         FROM enrollment
         WHERE course_id = #{courseId}
     </select>
 
     <!-- 총 학점 -->
-    <select id="findTotalCreditByStudentId" resultType="int">
+    <select id="findTotalCreditsByStudentId" resultType="int">
         SELECT SUM(s.credit)
         FROM enrollment e
-        JOIN course c ON e.course_id = c.id
-        JOIN subject s ON c.subject_id = s.id
+            JOIN course c ON e.course_id = c.id
+            JOIN subject s ON c.subject_id = s.id
         WHERE e.student_id = #{studentId}
     </select>
 
     <!-- 시간표 중복 확인 -->
-    <select id="findEnrolledCourseDayTimeByStudentId" resultType="com.ac.kr.academy.dto.course.CourseDayTimeDTO">
+    <select id="findEnrolledCourseDayTimesByStudentId" resultType="com.ac.kr.academy.dto.course.CourseDayTimeDTO">
         SELECT
             c.day_of_week,
             c.time
         FROM enrollment e
-        JOIN course c ON e.course_id = c.id
+            JOIN course c ON e.course_id = c.id
         WHERE e.student_id = #{studentId}
+    </select>
+
+    <select id="findById" resultType="com.ac.kr.academy.domain.enrollment.Enrollment">
+        SELECT id, course_id, student_id
+        FROM enrollment
+        WHERE id = #{id}
+    </select>
+
+    <select id="findEnrollmentsByCourseId" resultType="com.ac.kr.academy.domain.enrollment.Enrollment">
+        SELECT id, course_id, student_id
+        FROM enrollment
+        WHERE course_id = #{courseId}
+    </select>
+
+    <select id="findAllEnrollments" resultType="com.ac.kr.academy.domain.enrollment.Enrollment">
+        SELECT id, course_id, student_id
+        FROM enrollment
     </select>
 
     <!-- 수강 취소 -->
     <delete id="deleteByCourseIdAndStudentId">
         DELETE FROM enrollment
         WHERE course_id = #{courseId} AND student_id = #{studentId}
+    </delete>
+
+    <delete id="deleteByCourseId">
+        DELETE FROM enrollment
+        WHERE course_id = #{courseId}
     </delete>
 </mapper>
 

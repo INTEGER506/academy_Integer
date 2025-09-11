@@ -123,14 +123,29 @@
     <update id="update">
         UPDATE course
         <set>
-            <if test="dto.capacity != null">capacity = #{dto.capacity},</if>
-            <if test="dto.dayOfWeek != null">day_of_week = #{dto.dayOfWeek},</if>
-            <if test="dto.place != null">place = #{dto.place},</if>
-            <if test="dto.status != null">status = #{dto.status},</if>
-            <if test="dto.time != null">time = #{dto.time}</if>
+            <if test="capacity != null">capacity = #{capacity},</if>
+            <if test="dayOfWeek != null">day_of_week = #{dayOfWeek},</if>
+            <if test="place != null">place = #{place},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="time != null">time = #{time},</if>
+            <if test="professorId != null">professor_id = #{professorId},</if>
+            <if test="semesterId != null">semester_id = #{semesterId},</if>
         </set>
         WHERE id = #{id}
     </update>
+
+    <update id="updateNumOfStudent">
+        UPDATE course
+        SET num_of_student = num_of_student + #{numOfStudent}
+        WHERE id = #{id}
+    </update>
+
+    <select id="findCreditByCourseId" resultType="int">
+        SELECT s.credit
+        FROM course c
+        JOIN subject s ON c.subject_id = s.id
+        WHERE c.id = #{courseId}
+    </select>
 
     <!-- 강의 삭제 -->
     <delete id="delete">
