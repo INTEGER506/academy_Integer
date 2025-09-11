@@ -1,11 +1,12 @@
 package com.ac.kr.academy.controller.auth;
 
+import com.ac.kr.academy.dto.auth.ChangePasswordDTO;
 import com.ac.kr.academy.dto.auth.JwtResponseDTO;
 import com.ac.kr.academy.dto.auth.LoginRequestDTO;
 import com.ac.kr.academy.security.CustomUserDetails;
 import com.ac.kr.academy.security.jwt.JwtTokenProvider;
+import com.ac.kr.academy.service.user.UserService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -22,7 +23,6 @@ import org.springframework.web.bind.annotation.RestController;
  * - 로그인
  * */
 
-@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/auth")
@@ -30,6 +30,7 @@ public class AuthRestController {
 
     private final JwtTokenProvider tokenProvider;
     private final AuthenticationManager authenticationManager;
+    private final UserService userService;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@Validated @RequestBody LoginRequestDTO loginRequest) {
@@ -52,5 +53,19 @@ public class AuthRestController {
                         .isTempPassword(isTempPassword)
                         .build()
         );
+    }
+
+    //비밀번호 변경
+    @PostMapping("/change-password")
+    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordDTO changePasswordDTO, Authentication auth){
+        String username = auth.getName();
+        try{
+            userService.changePassword(username,
+                    changePasswordDTO.getCurrentPassword(),
+                    changePasswordDTO.getNewPassword());
+            return ResponseEntity.ok("비밀번호 변경을 완료했습니다.");
+        } catch (IllegalArgumentException e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 }

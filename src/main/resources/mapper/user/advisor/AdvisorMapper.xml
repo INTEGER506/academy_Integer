@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ac.kr.academy.mapper.user.advisor.AdvisorMapper">
+    <insert id="insertAdvisor">
+        INSERT INTO advisor (id, professor_id, student_id)
+        VALUES (advisor_seq.NEXTVAL, #{professorId}, #{studentId})
+    </insert>
+
+    <update id="updateAdvisor" parameterType="com.ac.kr.academy.domain.user.Advisor">
+        UPDATE advisor
+        SET professor_id = #{professorId}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteAdvisor" parameterType="long">
+        DELETE FROM advisor
+        WHERE id = #{id}
+    </delete>
+
+    <select id="findAllAdvisor" resultType="com.ac.kr.academy.domain.user.Advisor">
+        SELECT a.*,
+               p.professor_num, u1.name AS professor_name,
+               s.student_num, u2.name AS student_name
+        FROM advisor a
+        JOIN professor p ON a.professor_id = p.id
+        JOIN users u1 ON p.user_id = u1.id
+        JOIN student s ON a.student_id = s.id
+        JOIN users u2 ON s.user_id = u2.id
+    </select>
+
+    <select id="findByProfessorId" parameterType="long" resultType="com.ac.kr.academy.domain.user.Advisor">
+        SELECT a.*,
+               p.professor_num, u1.name AS professor_name,
+               s.student_num, u2.name AS student_name
+        FROM advisor a
+                 JOIN professor p ON a.professor_id = p.id
+                 JOIN users u1 ON p.user_id = u1.id
+                 JOIN student s ON a.student_id = s.id
+                 JOIN users u2 ON s.user_id = u2.id
+        WHERE a.professor_id = #{professorId}
+    </select>
+
+    <select id="findByStudentId" parameterType="long" resultType="com.ac.kr.academy.domain.user.Advisor">
+        SELECT a.*,
+               p.professor_num, u1.name AS professor_name,
+               s.student_num, u2.name AS student_name
+        FROM advisor a
+                 JOIN professor p ON a.professor_id = p.id
+                 JOIN users u1 ON p.user_id = u1.id
+                 JOIN student s ON a.student_id = s.id
+                 JOIN users u2 ON s.user_id = u2.id
+        WHERE a.student_id = #{studentId}
+    </select>
+
+</mapper>

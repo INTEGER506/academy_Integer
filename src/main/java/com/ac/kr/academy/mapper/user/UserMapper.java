@@ -28,7 +28,7 @@ public interface UserMapper {
     //사용자 정보와 권한 조회 (로그인용)
     User findByUsername(@Param("username") String username);
 
-    //비밀번호 초기화를 위한 메서드
+    //비밀번호 초기화, 변경
     void updateUserPassword(@Param("username") String username,
                             @Param("password") String password,
                             @Param("passwordTemp") boolean passwordTemp);

@@ -41,7 +41,8 @@
     </select>
 
     <select id="findByUsername" resultType="com.ac.kr.academy.domain.user.User" parameterType="string">
-        SELECT * FROM users
+        SELECT *
+        FROM users
         WHERE username = #{username}
     </select>
 

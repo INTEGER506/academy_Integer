@@ -1,6 +1,7 @@
 package com.ac.kr.academy.security;
 
 import com.ac.kr.academy.domain.user.User;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -8,6 +9,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.Collections;
 
+@Slf4j
 public class CustomUserDetails implements UserDetails {
 
     private final User user;
@@ -25,6 +27,7 @@ public class CustomUserDetails implements UserDetails {
         return Collections.singleton(new SimpleGrantedAuthority(user.getRole()));
     }
 
+//로그인 오류 잡기위한 로그 추가
     @Override
     public String getPassword() {
         return user.getPassword();

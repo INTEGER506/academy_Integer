@@ -48,7 +48,7 @@ public class SecurityConfig {
 
         //권한
         http.authorizeRequests()
-                .antMatchers("/login", "/auth/**", "/css/**", "/error/**").permitAll()  //인증없이 접근가능
+                .antMatchers("/login", "/api/auth/login", "/auth/**", "/css/**", "/error/**").permitAll()  //인증없이 접근가능
                 .antMatchers("/admin/**").hasRole("ADMIN")  //ADMIN 권한만 가능
                 .antMatchers("/").hasRole("USER")
                 .anyRequest().authenticated();  //<-반드시 작성

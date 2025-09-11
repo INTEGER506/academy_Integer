@@ -1,5 +1,7 @@
 package com.ac.kr.academy.controller.auth;
 
+import com.ac.kr.academy.service.user.UserService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;

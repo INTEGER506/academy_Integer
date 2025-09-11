@@ -9,7 +9,7 @@
             SELECT student_seq.NEXTVAL FROM dual
         </selectKey>
         INSERT INTO student (id, student_num, created_at, dept_id, user_id)
-        VALUES (#{id, #{studentNum}, #{status}, SYSDATE, #{deptId}, #{userId})
+        VALUES (#{id}, #{studentNum}, #{status}, SYSDATE, #{deptId}, #{userId})
     </insert>
 
     <update id="updateStudent" parameterType="com.ac.kr.academy.domain.user.Student">
