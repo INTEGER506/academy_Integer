@@ -1,17 +1,15 @@
 package com.ac.kr.academy.dto.course;
 
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
+import lombok.Builder;
+import lombok.Data;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
+@Builder
 public class CourseUpdateRequestDTO {
 
     @Min(value = 4, message = "정원은 최소 4명입니다.")

@@ -13,7 +13,11 @@ public interface EnrollmentService {
 
     void cancel(Long courseId, Long studentId);
 
-    List<CourseDayTimeDTO> findEnrolledCoursesByStudentId(Long studentId);
+    int countEnrollmentsByCourseId(Long courseId);
+
+    int findTotalCreditsByStudentId(Long studentId);
+
+    List<CourseDayTimeDTO> findEnrolledCourseDayTimesByStudentId(Long studentId);
 
     List<Enrollment> findEnrollmentsByCourseId(Long courseId);
 

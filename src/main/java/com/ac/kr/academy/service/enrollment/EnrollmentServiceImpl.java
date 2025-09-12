@@ -31,7 +31,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         }
 
         // 강의 상세 정보 및 현재 수강 인원 확인
-        Course course = courseMapper.findById(courseId)
+        Course course = courseMapper.findCourseById(courseId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 강의입니다."));
 
         if (course.getNumOfStudent() >= course.getCapacity()) {
@@ -40,7 +40,8 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
         // 수강 학점 초과 여부
         int currentCredits = enrollmentMapper.findTotalCreditsByStudentId(studentId);
-        int newCourseCredit = courseMapper.findCreditByCourseId(courseId);
+        int newCourseCredit = courseMapper.findCreditByCourseId(courseId)
+                .orElse(0); // Optional<Integer>에서 int로 변환
         if (currentCredits + newCourseCredit > 18) {
             throw new IllegalStateException("수강 가능 학점(18학점)을 초과했습니다.");
         }
@@ -75,14 +76,14 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         }
         // 수강 신청 취소(삭제)
         enrollmentMapper.deleteByCourseIdAndStudentId(courseId, studentId);
-        Course course = courseMapper.findById(courseId)
+        Course course = courseMapper.findCourseById(courseId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 강의입니다."));
         // 강의의 현재 수강 인원 1 감소
         courseMapper.updateNumOfStudent(courseId, - 1);
     }
 
     @Override
-    public List<CourseDayTimeDTO> findEnrolledCoursesByStudentId(Long studentId) {
+    public List<CourseDayTimeDTO> findEnrolledCourseDayTimesByStudentId(Long studentId) {
         return enrollmentMapper.findEnrolledCourseDayTimesByStudentId(studentId);
     }
 
@@ -99,5 +100,15 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     @Override
     public Optional<Enrollment> findById(Long id) {
         return enrollmentMapper.findById(id);
+    }
+
+    @Override
+    public int countEnrollmentsByCourseId(Long courseId) {
+        return enrollmentMapper.countEnrollmentsByCourseId(courseId);
+    }
+
+    @Override
+    public int findTotalCreditsByStudentId(Long studentId) {
+        return enrollmentMapper.findTotalCreditsByStudentId(studentId);
     }
 }

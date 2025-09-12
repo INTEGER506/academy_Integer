@@ -13,13 +13,16 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CourseListResponseDTO {
-    private Long courseId;
-    private String place;
+    private Long id;
+    private Long professorId;
+    private String subjectName;
+    private String professorName;
+    private String semesterName;
+    private int capacity;
+    private int numOfStudent;
     private String dayOfWeek;
-    private Integer capacity;
     private String time;
-    private Subject subject;
-    private Professor professor;
-    private Semester semester;
-    private Dept dept;
+    private String place;
+    private String status;
+    private int credit;
 }

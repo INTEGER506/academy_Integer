@@ -9,6 +9,7 @@
         <result property="place" column="place"/>
         <result property="dayOfWeek" column="day_of_week"/>
         <result property="capacity" column="capacity"/>
+        <result property="numOfStudent" column="num_of_student"/>
         <result property="status" column="status"/>
         <result property="time" column="time"/>
 
@@ -28,61 +29,48 @@
             <result property="name" column="semester_name"/>
             <result property="year" column="semester_year"/>
         </association>
-        
+
         <association property="dept" javaType="com.ac.kr.academy.domain.dept.Dept">
             <id property="id" column="dept_id"/>
             <result property="deptName" column="dept_name"/>
         </association>
     </resultMap>
+    <insert id="insert" parameterType="com.ac.kr.academy.dto.course.CourseCreateRequestDTO">
 
-    <!-- 강의 개설 -->
-    <insert id="insert">
-        <selectKey keyProperty="id" order="BEFORE" resultType="long">
-            SELECT course_seq.NEXTVAL FROM dual
+        <selectKey keyProperty="id" resultType="long" order="BEFORE">
+            SELECT course_seq.nextval FROM dual
         </selectKey>
+
         INSERT INTO course (
-        id, professor_id, subject_id, semester_id, capacity, day_of_week, place, status, time
-        )
-        VALUES (
-        #{id}, #{professorId}, #{subjectId}, #{semesterId}, #{capacity}, #{dayOfWeek}, #{place}, #{status}, #{time}
+        id,
+        professor_id,
+        subject_id,
+        semester_id,
+        capacity,
+        day_of_week,
+        place,
+        time,
+        status,
+        num_of_student
+        ) VALUES (
+        #{id},
+        #{professorId},
+        #{subjectId},
+        #{semesterId},
+        #{capacity},
+        #{dayOfWeek},
+        #{place},
+        #{time},
+        '개설',
+        0
         )
     </insert>
 
-    <!-- 중복 방지를 위한 -->
-    <select id="existsByDayOfWeekAndPlaceAndTime" resultType="boolean">
-        SELECT COUNT(*) > 0
-        FROM course
-        WHERE day_of_week = #{dayOfWeek} AND place = #{place} AND time = #{time}
-    </select>
-
-    <!-- 강의 목록 조회 -->
     <select id="findAll" resultMap="CourseListResponseMap">
         SELECT
-            c.id AS course_id, c.place, c.day_of_week, c.capacity, c.status,
+            c.id AS course_id, c.place, c.day_of_week, c.capacity, c.status, c.num_of_student, c.time,
             s.id AS subject_id, s.name AS subject_name, s.credit, s.description AS subject_description,
-            p.id AS professor_id, p.professor_num,
-            sem.id AS semester_id, sem.name AS semester_name, sem.year AS semester_year,
-            d.id AS dept_id, d.dept_name
-        FROM course c
-        JOIN subject s ON c.subject_id = s.id
-        JOIN professor p ON c.professor_id = p.id
-        JOIN semester sem ON c.semester_id = sem.id
-        JOIN dept d ON s.dept_id = d.id
-        <where>
-            <if test="keyword != null and keyword != ''">
-                s.name LIKE '%' || #{keyword} || '%'
-                OR d.dept_name LIKE '%' || #{keyword} || '%'
-            </if>
-        </where>
-        ORDER BY c.id DESC
-    </select>
-
-    <!-- 과목명으로 강의 조회 -->
-    <select id="findAllBySubjectName" resultMap="CourseListResponseMap">
-        SELECT
-            c.id AS course_id, c.place, c.day_of_week, c.capacity, c.status,
-            s.id AS subject_id, s.name AS subject_name, s.credit, s.description AS subject_description,
-            p.id AS professor_id, p.professor_num,
+            p.id AS professor_id, p.professor_num, u.name AS professor_name,
             sem.id AS semester_id, sem.name AS semester_name, sem.year AS semester_year,
             d.id AS dept_id, d.dept_name
         FROM course c
@@ -90,20 +78,15 @@
                  JOIN professor p ON c.professor_id = p.id
                  JOIN semester sem ON c.semester_id = sem.id
                  JOIN dept d ON s.dept_id = d.id
-        <where>
-            <if test="keyword != null and keyword != ''">
-                s.name LIKE '%' || #{keyword} || '%'
-            </if>
-        </where>
+                 JOIN users u ON p.user_id = u.id
         ORDER BY c.id DESC
     </select>
 
-    <!-- 학과명으로 강의 조회-->
-    <select id="findAllByDeptName" resultMap="CourseListResponseMap">
+    <select id="findById" resultMap="CourseListResponseMap">
         SELECT
-            c.id AS course_id, c.place, c.day_of_week, c.capacity, c.status,
-            s.id AS subject_id, s.name AS subject_name, s.credit, s.description AS subject_description,
-            p.id AS professor_id, p.professor_num,
+            c.id AS course_id, c.place, c.day_of_week, c.capacity, c.status, c.num_of_student, c.time,
+            s.id AS subject_id, s.name AS subject_name, s.credit,
+            p.id AS professor_id, p.professor_num, u.name AS professor_name,
             sem.id AS semester_id, sem.name AS semester_name, sem.year AS semester_year,
             d.id AS dept_id, d.dept_name
         FROM course c
@@ -111,44 +94,187 @@
                  JOIN professor p ON c.professor_id = p.id
                  JOIN semester sem ON c.semester_id = sem.id
                  JOIN dept d ON s.dept_id = d.id
-        <where>
-            <if test="keyword != null and keyword != ''">
-                d.dept_name LIKE '%' || #{keyword} || '%'
-            </if>
-        </where>
-        ORDER BY c.id DESC
+                 JOIN users u ON p.user_id = u.id
+        WHERE c.id = #{id}
     </select>
 
-    <!-- 강의 수정 -->
+    <!-- 강의 정보 수정 -->
     <update id="update">
         UPDATE course
         <set>
-            <if test="capacity != null">capacity = #{capacity},</if>
-            <if test="dayOfWeek != null">day_of_week = #{dayOfWeek},</if>
-            <if test="place != null">place = #{place},</if>
-            <if test="status != null">status = #{status},</if>
-            <if test="time != null">time = #{time},</if>
-            <if test="professorId != null">professor_id = #{professorId},</if>
-            <if test="semesterId != null">semester_id = #{semesterId},</if>
+            <if test="dto.capacity != null">capacity = #{dto.capacity},</if>
+            <if test="dto.dayOfWeek != null">day_of_week = #{dto.dayOfWeek},</if>
+            <if test="dto.place != null">place = #{dto.place},</if>
+            <if test="dto.time != null">time = #{dto.time},</if>
         </set>
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateStatus">
+        UPDATE course
+        SET status = #{status}
         WHERE id = #{id}
     </update>
 
     <update id="updateNumOfStudent">
         UPDATE course
-        SET num_of_student = num_of_student + #{numOfStudent}
-        WHERE id = #{id}
+        SET num_of_student = num_of_student + #{change}
+        WHERE id = #{courseId}
     </update>
 
     <select id="findCreditByCourseId" resultType="int">
         SELECT s.credit
         FROM course c
-        JOIN subject s ON c.subject_id = s.id
+                 JOIN subject s ON c.subject_id = s.id
         WHERE c.id = #{courseId}
     </select>
 
-    <!-- 강의 삭제 -->
     <delete id="delete">
         DELETE FROM course WHERE id = #{id}
     </delete>
+
+    <select id="findCourseById" resultType="com.ac.kr.academy.domain.course.Course">
+        SELECT
+            id,
+            professor_id,
+            subject_id,
+            semester_id,
+            capacity,
+            num_of_student,
+            day_of_week,
+            place,
+            status,
+            time
+        FROM course
+        WHERE id = #{id}
+    </select>
 </mapper>
+
+<!--    &lt;!&ndash; 강의 개설 &ndash;&gt;-->
+<!--    <insert id="insert">-->
+<!--        <selectKey keyProperty="id" order="BEFORE" resultType="long">-->
+<!--            SELECT course_seq.NEXTVAL FROM dual-->
+<!--        </selectKey>-->
+<!--        INSERT INTO course (-->
+<!--        id, professor_id, subject_id, semester_id, capacity, num_of_student, day_of_week, place, status, time-->
+<!--        )-->
+<!--        VALUES (-->
+<!--        #{id}, #{professorId}, #{subjectId}, #{semesterId}, #{capacity}, #{numOfStudent}, #{dayOfWeek}, #{place}, #{status}, #{time}-->
+<!--        )-->
+<!--    </insert>-->
+
+<!--    &lt;!&ndash; 중복 방지를 위한 &ndash;&gt;-->
+<!--    <select id="existsByDayOfWeekAndPlaceAndTime" resultType="int">-->
+<!--        SELECT-->
+<!--            COUNT(*)-->
+<!--        FROM-->
+<!--            course-->
+<!--        WHERE-->
+<!--            day_of_week = #{dayOfWeek} AND place = #{place} AND time = #{time}-->
+<!--    </select>-->
+
+<!--    &lt;!&ndash; 강의 목록 조회 &ndash;&gt;-->
+<!--    <select id="findAll" resultMap="CourseListResponseMap">-->
+<!--        SELECT-->
+<!--        c.id AS course_id, c.place, c.day_of_week, c.capacity, c.status,-->
+<!--        s.id AS subject_id, s.name AS subject_name, s.credit, s.description AS subject_description,-->
+<!--        p.id AS professor_id, p.professor_num, u.name AS professor_name,-->
+<!--        sem.id AS semester_id, sem.name AS semester_name, sem.year AS semester_year,-->
+<!--        d.id AS dept_id, d.dept_name-->
+<!--        FROM course c-->
+<!--        JOIN subject s ON c.subject_id = s.id-->
+<!--        JOIN professor p ON c.professor_id = p.id-->
+<!--        JOIN semester sem ON c.semester_id = sem.id-->
+<!--        JOIN dept d ON s.dept_id = d.id-->
+<!--        JOIN users u ON p.user_id = u.id-->
+<!--        <where>-->
+<!--            <if test="keyword != null and keyword != ''">-->
+<!--                <choose>-->
+<!--                    <when test="type == 'subject'">-->
+<!--                        AND s.name LIKE '%' || #{keyword} || '%'-->
+<!--                    </when>-->
+<!--                    <when test="type == 'dept'">-->
+<!--                        AND d.dept_name LIKE '%' || #{keyword} || '%'-->
+<!--                    </when>-->
+<!--                    <otherwise>-->
+<!--                        AND (s.name LIKE '%' || #{keyword} || '%' OR d.dept_name LIKE '%' || #{keyword} || '%')-->
+<!--                    </otherwise>-->
+<!--                </choose>-->
+<!--            </if>-->
+<!--        </where>-->
+<!--        ORDER BY c.id DESC-->
+<!--    </select>-->
+
+<!--    &lt;!&ndash; 강의 상세 조회 &ndash;&gt;-->
+<!--    <select id="findById" resultMap="CourseListResponseMap">-->
+<!--        SELECT-->
+<!--            c.id AS course_id, c.place, c.day_of_week, c.capacity, c.status,-->
+<!--            s.id AS subject_id, s.name AS subject_name, s.credit,-->
+<!--            p.id AS professor_id, p.professor_num, u.name AS professor_name,-->
+<!--            sem.id AS semester_id, sem.name AS semester_name, sem.year AS semester_year,-->
+<!--            d.id AS dept_id, d.dept_name-->
+<!--        FROM course c-->
+<!--                 JOIN subject s ON c.subject_id = s.id-->
+<!--                 JOIN professor p ON c.professor_id = p.id-->
+<!--                 JOIN semester sem ON c.semester_id = sem.id-->
+<!--                 JOIN dept d ON s.dept_id = d.id-->
+<!--                 JOIN users u ON p.user_id = u.id-->
+<!--        WHERE c.id = #{id}-->
+<!--    </select>-->
+
+<!--    &lt;!&ndash; 강의 수정 &ndash;&gt;-->
+<!--    <update id="update">-->
+<!--        UPDATE course-->
+<!--        <set>-->
+<!--            <if test="dto.capacity != null">capacity = #{dto.capacity},</if>-->
+<!--            <if test="dto.dayOfWeek != null">day_of_week = #{dto.dayOfWeek},</if>-->
+<!--            <if test="dto.place != null">place = #{dto.place},</if>-->
+<!--            <if test="dto.status != null">status = #{dto.status},</if>-->
+<!--            <if test="dto.time != null">time = #{dto.time},</if>-->
+<!--            <if test="dto.professorId != null">professor_id = #{dto.professorId},</if>-->
+<!--            <if test="dto.semesterId != null">semester_id = #{dto.semesterId},</if>-->
+<!--        </set>-->
+<!--        WHERE id = #{id}-->
+<!--    </update>-->
+
+<!--    <update id="updateStatus">-->
+<!--        UPDATE course-->
+<!--        SET status = #{status}-->
+<!--        WHERE id = #{id}-->
+<!--    </update>-->
+
+<!--    <update id="updateNumOfStudent">-->
+<!--        UPDATE course-->
+<!--        SET num_of_student = num_of_student + #{change}-->
+<!--        WHERE id = #{courseId}-->
+<!--    </update>-->
+
+<!--    <select id="findCreditByCourseId" resultType="int">-->
+<!--        SELECT s.credit-->
+<!--        FROM course c-->
+<!--        JOIN subject s ON c.subject_id = s.id-->
+<!--        WHERE c.id = #{courseId}-->
+<!--    </select>-->
+
+<!--    &lt;!&ndash; 강의 삭제 &ndash;&gt;-->
+<!--    <delete id="delete">-->
+<!--        DELETE FROM course WHERE id = #{id}-->
+<!--    </delete>-->
+
+<!--    &lt;!&ndash; 강의 정보(도메인) 조회 &ndash;&gt;-->
+<!--    <select id="findCourseById" resultType="com.ac.kr.academy.domain.course.Course">-->
+<!--        SELECT-->
+<!--            id,-->
+<!--            professor_id,-->
+<!--            subject_id,-->
+<!--            semester_id,-->
+<!--            capacity,-->
+<!--            num_of_student,-->
+<!--            day_of_week,-->
+<!--            place,-->
+<!--            status,-->
+<!--            time-->
+<!--        FROM course-->
+<!--        WHERE id = #{id}-->
+<!--    </select>-->
+<!--</mapper>-->

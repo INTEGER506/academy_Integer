@@ -40,7 +40,7 @@ public class EnrollmentController {
     public String create(@RequestParam Long courseId,
                          @RequestParam Long studentId, RedirectAttributes redirectAttributes){
         enrollmentService.enroll(courseId, studentId);
-        redirectAttributes.addFlashAttribute("message", "수강 신청이 완료되었습니다.")
+        redirectAttributes.addFlashAttribute("message", "수강 신청이 완료되었습니다.");
         return "redirect:/enrollments/list";
     }
 

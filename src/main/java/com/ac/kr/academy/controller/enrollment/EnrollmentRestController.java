@@ -35,7 +35,7 @@ public class EnrollmentRestController {
     @GetMapping("/my-courses")
     public ResponseEntity<List<CourseDayTimeDTO>> getMyEnrolledCourses() {
         Long studentId = 1L; // 로그인한 학생의 ID와 교환
-        List<CourseDayTimeDTO> enrolledCourses = enrollmentService.findEnrolledCoursesByStudentId(studentId);
+        List<CourseDayTimeDTO> enrolledCourses = enrollmentService.findEnrolledCourseDayTimesByStudentId(studentId);
         return new  ResponseEntity<>(enrolledCourses, HttpStatus.OK);
     }
 

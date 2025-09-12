@@ -19,7 +19,8 @@ public interface EnrollmentMapper {
 
     void deleteByCourseIdAndStudentId(@Param("courseId") Long  courseId, @Param("studentId") Long studentId);
 
-    int countStudentsByCourseId(Long courseId);
+    // 강의에 수강 신청한 학생 수 조회
+    int countEnrollmentsByCourseId(Long courseId);
 
     int findTotalCreditsByStudentId(Long studentId);
 
@@ -31,5 +32,6 @@ public interface EnrollmentMapper {
 
     List<Enrollment> findAllEnrollments();
 
+    // 특정 강의의 모든 수강 신청 기록 삭제
     void deleteByCourseId(Long courseId);
 }
