@@ -1,21 +1,14 @@
 package com.ac.kr.academy.controller.auth;
 
-import com.ac.kr.academy.domain.user.Student;
 import com.ac.kr.academy.domain.user.User;
-import com.ac.kr.academy.mapper.admin.AdminMapper;
-import com.ac.kr.academy.mapper.user.UserMapper;
-import com.ac.kr.academy.mapper.user.student.StudentMapper;
 import com.ac.kr.academy.service.user.UserService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.Year;
-import java.util.UUID;
+import java.util.List;
 
 /**
  * 관리자 전용 API
@@ -26,70 +19,26 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('ROLE_ADMIN')")
 public class AdminRestController {
 
-    private final UserMapper userMapper;
-    private final AdminMapper adminMapper;
-    private final StudentMapper studentMapper;
-    private final BCryptPasswordEncoder passwordEncoder;
     private final UserService userService;
 
     //로그인 ID 자동생성
-    @PreAuthorize("hasRole('ROLE_ADMIN')")   //관리자만 접근가능
     @PostMapping("/create-account")
     public ResponseEntity<?> createAccount(@RequestParam String role,
                                            @RequestParam(required = false) Long deptId, //파라미터가 없어도 에러X
                                            @RequestParam String email,
                                            @RequestParam String name){
-        //역할에 따라 순번 키와 최종 사용자 ID(username)을 생성
-        String sequenceKey;
-        String username;
-
-        //임시 비밀번호 생성
-        String tempPassword = UUID.randomUUID().toString().substring(0, 8);
-        String encodedPassword = passwordEncoder.encode(tempPassword);
-
-        User user = new User();
-        user.setEmail(email);
-        user.setName(name);
-        user.setRole(role);
-        user.setPassword(encodedPassword);
-        user.setPasswordTemp(true);
-        userMapper.insertUser(user);
-
-        if("ROLE_STUDENT".equals(role)){    //학번 = 연도/학과/순번
-            String formatedDeptId = String.format("%02d", deptId);
-            sequenceKey = Year.now().toString() + formatedDeptId;
-            adminMapper.incrementSequence(sequenceKey);
-            int sequence = adminMapper.findSequenceNum(sequenceKey);
-            username = sequenceKey + String.format("%03d", sequence);
-
-            user.setUsername(username);
-            userMapper.updateUsername(user.getId(), username);
-
-            //Student 테이블에 데이터 삽입
-            Student student = new Student();
-            student.setStudentNum(username);
-            student.setUserId(user.getId());
-            student.setDeptId(deptId);
-            studentMapper.insertStudent(student);
-
-        }else{          //나머지 사용자 로그인 ID는 역할명(예: PROF)을 순번키로 사용
-            sequenceKey = role.replace("ROLE_", "");
-            adminMapper.incrementSequence(sequenceKey);
-            int sequence = adminMapper.findSequenceNum(sequenceKey);
-            username = sequenceKey + String.format("%05d", sequence);
-
-            user.setUsername(username);
-            userMapper.updateUsername(user.getId(), username);
-
+        try{
+            User createUser = userService.createUser(role, deptId, email, name);
+            return ResponseEntity.ok("계정 생성 완료, 로그인 ID: " + createUser.getUsername());
+        } catch (IllegalArgumentException e){
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
-
-        return ResponseEntity.ok("계정 생성 완료. 로그인 ID: " + username);
     }
 
     //비밀번호 초기화
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping("/reset-password")
     public ResponseEntity<?> resetPassword(@RequestParam String username){
         try{
@@ -100,8 +49,39 @@ public class AdminRestController {
         }
     }
 
+    //사용자 전체 조회
+    @GetMapping("/users/all")
+    public ResponseEntity<?> getAllUsers(){
+        List<User> userList = userService.getAllUsers();
+        if(userList.isEmpty()){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("등록된 사용자가 없습니다.");
+        }
+        return ResponseEntity.ok(userList);
+    }
+
+    //권한별 사용자 조회
+    @GetMapping("/users/role")
+    public ResponseEntity<?> getUsersByRole(@RequestParam String role){
+        List<User> userList = userService.getUsersByRole(role);
+        if(userList.isEmpty()){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("해당 권한을 가진 사용자가 없습니다.");
+        }
+        return ResponseEntity.ok(userList);
+    }
+
+    //사용자 정보 수정
+    @PutMapping("/user/{userId}")
+    public ResponseEntity<?> updateUser(@PathVariable Long userId,
+                                        @RequestBody User user,
+                                        @RequestBody Object roleEntity){
+            if(!userId.equals(user.getId())){
+                return ResponseEntity.badRequest().body("ID가 일치하지 않습니다.");
+            }
+            userService.updateUser(user, roleEntity);
+            return ResponseEntity.ok("사용자 정보가 수정되었습니다.");
+    }
+
     //사용자 삭제
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @DeleteMapping("/user/{userId}")
     public ResponseEntity<?> deleteUser(@PathVariable Long userId){
         try{
@@ -114,5 +94,12 @@ public class AdminRestController {
         } catch (Exception e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("사용자 삭제 중 오류가 발생했습니다.");
         }
+    }
+
+    //학생 상태값 변경 (재학중, 휴학중, 졸업)
+    @PutMapping("/user/{userId}/status")
+    public ResponseEntity<?> updateStudentStatus(@PathVariable Long userId, @RequestParam String status){
+        userService.updateStudentStatus(userId, status);
+        return ResponseEntity.ok("사용자 iD " + userId + "의 상태를 '" + status + "'로 변경 완료했습니다.");
     }
 }

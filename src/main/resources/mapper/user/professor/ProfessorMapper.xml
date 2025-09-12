@@ -24,24 +24,11 @@
         WHERE id = #{id}
     </delete>
 
-    <select id="findAllProfessors" resultType="com.ac.kr.academy.domain.user.Professor">
+    <select id="findByUserId" resultType="com.ac.kr.academy.domain.user.Professor">
         SELECT p.*, u.username, u.email, u.phone, u.name, u.role
         FROM professor p
         JOIN users u ON p.user_id = u.id
-    </select>
-
-    <select id="findById" parameterType="long" resultType="com.ac.kr.academy.domain.user.Professor">
-        SELECT p.*, u.username, u.email, u.phone, u.name, u.role
-        FROM professor p
-        JOIN users u ON p.user_id = u.id
-        WHERE p.id = #{id}
-    </select>
-
-    <select id="findByProfessorNum" parameterType="string" resultType="com.ac.kr.academy.domain.user.Professor">
-        SELECT p.*, u.username, u.email, u.phone, u.name, u.role
-        FROM professor p
-        JOIN users u ON p.user_id = u.id
-        WHERE p.professor_num = #{professorNum}
+        WHERE p.user_id = #{userId}
     </select>
 
 </mapper>

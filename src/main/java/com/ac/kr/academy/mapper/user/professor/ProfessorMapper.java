@@ -4,8 +4,6 @@ import com.ac.kr.academy.domain.user.Professor;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import java.util.List;
-
 @Mapper
 public interface ProfessorMapper {
 
@@ -13,7 +11,5 @@ public interface ProfessorMapper {
     int updateProfessor(Professor professor);
     int deleteProfessor(@Param("id") Long id);
 
-    List<Professor> findAllProfessors();
-    Professor findById(@Param("id") Long id);
-    Professor findByProfessorNum(@Param("professorNum") String professorNum);
+    Professor findByUserId(@Param("userId") Long userId);
 }

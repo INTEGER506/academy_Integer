@@ -4,8 +4,6 @@ import com.ac.kr.academy.domain.user.Staff;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import java.util.List;
-
 @Mapper
 public interface StaffMapper {
 
@@ -13,8 +11,5 @@ public interface StaffMapper {
     int updateStaff(Staff staff);
     int deleteStaff(@Param("id") Long id);
 
-    List<Staff> findAllStaff();
-    Staff findById(@Param("id") Long id);
-    Staff findByStaffNum(@Param("staffNum") String staffNum);
-
+    Staff findByUserId(@Param("userId") Long userId);
 }

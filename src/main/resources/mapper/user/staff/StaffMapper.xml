@@ -23,23 +23,11 @@
         WHERE id = #{id}
     </delete>
 
-    <select id="findAllStaff" resultType="com.ac.kr.academy.domain.user.Staff">
+    <select id="findByUserId" resultType="com.ac.kr.academy.domain.user.Staff">
         SELECT s.*, u.username, u.email, u.phone, u.role
         FROM staff s
         JOIN users u ON s.user_id = u.id
+        WHERE s.user_id = #{userId}
     </select>
 
-    <select id="findById" parameterType="long" resultType="com.ac.kr.academy.domain.user.Staff">
-        SELECT s.*, u.username, u.email, u.phone, u.role
-        FROM staff s
-        JOIN users u ON s.user_id = u.id
-        WHERE s.id = #{id}
-    </select>
-
-    <select id="findByStaffNum" parameterType="string" resultType="com.ac.kr.academy.domain.user.Staff">
-        SELECT s.*, u.username, u.email, u.phone, u.role
-        FROM staff s
-        JOIN users u ON s.user_id = u.id
-        WHERE s.staff_num = #{staffNum}
-    </select>
 </mapper>

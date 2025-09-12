@@ -25,25 +25,17 @@
         WHERE id = #{id}
     </delete>
 
-
-    <select id="findAllStudents" parameterType="com.ac.kr.academy.domain.user.Student">
+    <select id="findByUserId" resultType="com.ac.kr.academy.domain.user.Student">
         SELECT s.*, u.username, u.email, u.phone, u.role
         FROM student s
         JOIN users u ON s.user_id = u.id
+        WHERE s.user_id = #{userId}
     </select>
 
-    <select id="findById" parameterType="long" resultType="com.ac.kr.academy.domain.user.Student">
-        SELECT s.*, u.username, u.email, u.phone, u.role
-        FROM student s
-        JOIN users u ON s.user_id = u.id
-        WHERE s.id = #{id}
-    </select>
-
-    <select id="findStudentNum" parameterType="string" resultType="com.ac.kr.academy.domain.user.Student">
-        SELECT s.*, u.username, u.email, u.phone, u.role
-        FROM student s
-        JOIN users u ON s.user_id = u.id
-        WHERE s.student_num = #{studentNum}
-    </select>
+    <update id="updateStatusByUserId">
+        UPDATE student
+        SET status = #{status}
+        WHERE user_id = #{userId}
+    </update>
 
 </mapper>

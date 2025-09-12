@@ -26,8 +26,13 @@
         DELETE FROM users WHERE id = #{id}
     </delete>
 
+    <!-- 전체 사용자 ID 조회 - 알림 -->
     <select id="findAllUserIds" resultType="long">
         SELECT id FROM users
+    </select>
+
+    <select id="findAllUsers" resultType="com.ac.kr.academy.domain.user.User">
+        SELECT * FROM users
     </select>
 
     <select id="findById" resultType="com.ac.kr.academy.domain.user.User" parameterType="long">
@@ -35,7 +40,7 @@
         WHERE id = #{id}
     </select>
 
-    <select id="findAllUsersByRole" resultType="long" parameterType="string">
+    <select id="findAllUsersByRole" resultType="com.ac.kr.academy.domain.user.User">
         SELECT id FROM users
         WHERE role = #{role}
     </select>
