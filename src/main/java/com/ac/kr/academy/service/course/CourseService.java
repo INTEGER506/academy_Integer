@@ -21,4 +21,7 @@ public interface CourseService {
 
     void closeCourse(Long courseId, Long userId);
 
+    CourseUpdateRequestDTO findUpdateById(Long id);
+
+
 }

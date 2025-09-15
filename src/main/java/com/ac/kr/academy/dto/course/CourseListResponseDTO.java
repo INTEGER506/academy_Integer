@@ -1,10 +1,6 @@
 package com.ac.kr.academy.dto.course;
 
 
-import com.ac.kr.academy.domain.dept.Dept;
-import com.ac.kr.academy.domain.professor.Professor;
-import com.ac.kr.academy.domain.semester.Semester;
-import com.ac.kr.academy.domain.subject.Subject;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

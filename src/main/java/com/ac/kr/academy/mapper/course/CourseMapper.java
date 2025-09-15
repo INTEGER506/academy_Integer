@@ -1,17 +1,15 @@
 package com.ac.kr.academy.mapper.course;
-
 import com.ac.kr.academy.domain.course.Course;
 import com.ac.kr.academy.dto.course.CourseListResponseDTO;
+import com.ac.kr.academy.dto.course.CourseCreateRequestDTO;
 import com.ac.kr.academy.dto.course.CourseUpdateRequestDTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
-import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 
 @Mapper
-@Repository
 public interface CourseMapper {
 
     // 강의 개설
@@ -29,10 +27,8 @@ public interface CourseMapper {
     // 단일 강의 상세 조회
     Optional<CourseListResponseDTO> findById(Long id);
 
-//    // 강의 정보 수정
-//    void update(@Param("dto") CourseUpdateRequestDTO courseUpdateRequestDTO, @Param("id") Long id);
     // 강의 정보 수정
-    void update(CourseUpdateRequestDTO courseUpdateRequestDTO, Long id);
+    void update(@Param("dto") CourseUpdateRequestDTO courseUpdateRequestDTO, @Param("id") Long id);
 
     // 강의 삭제
     void delete(Long id);
@@ -40,11 +36,11 @@ public interface CourseMapper {
     // 강의 폐강
     void closeCourse(Long id);
 
-//    // 강의실 중복 확인
-//    int existsByDayOfWeekAndPlaceAndTime(
-//            @Param("dayOfWeek") String dayOfWeek,
-//            @Param("place") String place,
-//            @Param("time") String time);
+    // 강의실 중복 확인
+    int existsByDayOfWeekAndPlaceAndTime(
+            @Param("dayOfWeek") String dayOfWeek,
+            @Param("place") String place,
+            @Param("time") String time);
 
     // 강의 학점 조회
     Optional<Integer> findCreditByCourseId(Long courseId);
