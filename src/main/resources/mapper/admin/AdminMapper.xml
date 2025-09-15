@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 로그인 ID 자동생성 매퍼 -->
+
+<!-- MERGE: 존재하면 +1, 없으면 신규 row 생성 -->
+<mapper namespace="com.ac.kr.academy.mapper.admin.AdminMapper">
+    <update id="incrementSequence">
+        MERGE INTO id_sequence ids
+        USING (SELECT #{sequenceKey} AS sequence_key FROM dual) sqk
+        ON (ids.sequence_key = sqk.sequence_key)
+        WHEN MATCHED THEN
+            UPDATE SET ids.sequence_num = ids.sequence_num + 1
+        WHEN NOT MATCHED  THEN
+            INSERT (sequence_key, sequence_num)
+            VALUES (sqk.sequence_key, 1)
+    </update>
+
+    <select id="findSequenceNum" resultType="int">
+        SELECT sequence_num
+        FROM id_sequence
+        WHERE sequence_key = #{sequenceKey}
+    </select>
+</mapper>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ac.kr.academy.mapper.user.staff.StaffMapper">
+    <insert id="insertStaff" parameterType="com.ac.kr.academy.domain.user.Staff">
+        <selectKey keyProperty="id" order="BEFORE" resultType="long">
+            SELECT staff_seq.NEXTVAL FROM dual
+        </selectKey>
+        INSERT INTO staff (id, staff_num, created_at, user_id)
+        VALUES (#{id}, #{staffNum}, SYSDATE, #{userId})
+    </insert>
+
+    <update id="updateStaff" parameterType="com.ac.kr.academy.domain.user.Staff">
+        UPDATE staff
+        SET
+        <if test="endedAt != null">
+            ended_at = #{endedAt}
+        </if>
+        WHERE user_id = #{userId}
+    </update>
+
+    <delete id="deleteStaff" parameterType="long">
+        DELETE FROM staff
+        WHERE user_id = #{userId}
+    </delete>
+
+    <select id="findByUserId" resultType="com.ac.kr.academy.domain.user.Staff">
+        SELECT s.*, u.username, u.email, u.phone, u.role
+        FROM staff s
+        JOIN users u ON s.user_id = u.id
+        WHERE s.user_id = #{userId}
+    </select>
+
+</mapper>

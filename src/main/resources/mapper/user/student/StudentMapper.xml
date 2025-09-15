@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ac.kr.academy.mapper.user.student.StudentMapper">
+    <insert id="insertStudent" parameterType="com.ac.kr.academy.domain.user.Student">
+        <selectKey keyProperty="id" order="BEFORE" resultType="long">
+            SELECT student_seq.NEXTVAL FROM dual
+        </selectKey>
+        INSERT INTO student (id, student_num, created_at, dept_id, user_id)
+        VALUES (#{id}, #{studentNum}, SYSDATE, #{deptId}, #{userId})
+    </insert>
+
+    <update id="updateStudent" parameterType="com.ac.kr.academy.domain.user.Student">
+        UPDATE student
+        <set>
+        <if test="deptId != null">
+            dept_id = #{deptId},
+        </if>
+        <if test="endedAt != null">
+            ended_at = #{endedAt},
+        </if>
+        <if test="status != null">
+            status = #{status}
+        </if>
+        </set>
+        WHERE user_id = #{userId}
+    </update>
+
+    <delete id="deleteStudent" parameterType="long">
+        DELETE FROM student
+        WHERE user_id = #{userId}
+    </delete>
+
+    <select id="findByUserId" resultType="com.ac.kr.academy.domain.user.Student">
+        SELECT s.*, u.username, u.email, u.phone, u.role
+        FROM student s
+        JOIN users u ON s.user_id = u.id
+        WHERE s.user_id = #{userId}
+    </select>
+
+    <update id="updateStatusByUserId">
+        UPDATE student
+        SET status = #{status}
+        WHERE user_id = #{userId}
+    </update>
+
+</mapper>
