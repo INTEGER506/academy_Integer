@@ -50,6 +50,7 @@ public class AuthRestController {
                 JwtResponseDTO.builder()
                         .accessToken(accessToken)
                         .refreshToken(refreshToken)
+                        .tokenType("Bearer")
                         .isTempPassword(isTempPassword)
                         .build()
         );

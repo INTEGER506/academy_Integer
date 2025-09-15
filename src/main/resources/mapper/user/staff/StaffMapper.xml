@@ -14,13 +14,16 @@
 
     <update id="updateStaff" parameterType="com.ac.kr.academy.domain.user.Staff">
         UPDATE staff
-        SET ended_at = #{endedAt}
-        WHERE id = #{id}
+        SET
+        <if test="endedAt != null">
+            ended_at = #{endedAt}
+        </if>
+        WHERE user_id = #{userId}
     </update>
 
     <delete id="deleteStaff" parameterType="long">
         DELETE FROM staff
-        WHERE id = #{id}
+        WHERE user_id = #{userId}
     </delete>
 
     <select id="findByUserId" resultType="com.ac.kr.academy.domain.user.Staff">

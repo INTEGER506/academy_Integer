@@ -1,6 +1,7 @@
 package com.ac.kr.academy.controller.auth;
 
 import com.ac.kr.academy.domain.user.User;
+import com.ac.kr.academy.dto.auth.UpdateUserRequestDTO;
 import com.ac.kr.academy.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -72,12 +73,11 @@ public class AdminRestController {
     //사용자 정보 수정
     @PutMapping("/user/{userId}")
     public ResponseEntity<?> updateUser(@PathVariable Long userId,
-                                        @RequestBody User user,
-                                        @RequestBody Object roleEntity){
-            if(!userId.equals(user.getId())){
+                                        @RequestBody UpdateUserRequestDTO requestDTO){
+            if(!userId.equals(requestDTO.getUser().getId())){
                 return ResponseEntity.badRequest().body("ID가 일치하지 않습니다.");
             }
-            userService.updateUser(user, roleEntity);
+            userService.updateUser(requestDTO.getUser(), requestDTO.getRoleEntity());
             return ResponseEntity.ok("사용자 정보가 수정되었습니다.");
     }
 

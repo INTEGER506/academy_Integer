@@ -11,7 +11,10 @@
 
     <update id="updateAdvisor" parameterType="com.ac.kr.academy.domain.user.Advisor">
         UPDATE advisor
-        SET professor_id = #{professorId}
+        SET
+        <if test="professorId != null">
+            professor_id = #{professorId}
+        </if>
         WHERE id = #{id}
     </update>
 

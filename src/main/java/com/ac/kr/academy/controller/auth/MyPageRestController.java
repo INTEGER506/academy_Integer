@@ -1,7 +1,7 @@
 package com.ac.kr.academy.controller.auth;
 
 import com.ac.kr.academy.domain.user.User;
-import com.ac.kr.academy.dto.auth.MyPageRequestDTO;
+import com.ac.kr.academy.dto.auth.UpdateUserRequestDTO;
 import com.ac.kr.academy.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -33,7 +33,7 @@ public class MyPageRestController {
     }
 
     @PutMapping("/me")
-    public ResponseEntity<?> updateMyInfo(@RequestBody MyPageRequestDTO requestDTO, Authentication auth){
+    public ResponseEntity<?> updateMyInfo(@RequestBody UpdateUserRequestDTO requestDTO, Authentication auth){
         User user = requestDTO.getUser();
         Object roleEntity = requestDTO.getRoleEntity();
 

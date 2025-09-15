@@ -9,16 +9,29 @@
             SELECT user_seq.NEXTVAL FROM dual
         </selectKey>
         INSERT INTO users (id, username, password_temp, email, password, phone, name, role)
-        VALUES (#{id}, #{username}, #{passwordTemp}, #{email}, #{password}, #{phone}, #{name}, #{role})
+        VALUES (#{id}, #{username}, #{passwordTemp}, #{email, jdbcType=VARCHAR}, #{password}, #{phone, jdbcType=VARCHAR}, #{name}, #{role})
     </insert>
 
+    <!-- 변경하고 싶은것만 변경하기 위해 <if> 추가 작성 -->
     <update id="updateUser" parameterType="com.ac.kr.academy.domain.user.User">
         UPDATE users
-        SET email = #{email},
-            password = #{password},
-            phone = #{phone},
+        <set>
+        <if test="email != null">
+            email = #{email, jdbcType=VARCHAR},
+        </if>
+        <if test="phone != null">
+            phone = #{phone, jdbcType=VARCHAR},
+        </if>
+        <if test="name != null">
             name = #{name},
-            role = #{role}
+        </if>
+        <if test="role != null">
+            role = #{role},
+        </if>
+        <if test="password != null">
+            password = #{password, jdbcType=VARCHAR}
+        </if>
+        </set>
         WHERE id = #{id}
     </update>
 

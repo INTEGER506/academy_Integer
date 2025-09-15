@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class MyPageRequestDTO {
+public class UpdateUserRequestDTO {
     private User user;
     private Object roleEntity;  //학생, 교수 등 상세정보 담을 필드
 }

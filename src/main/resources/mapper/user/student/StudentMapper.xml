@@ -9,20 +9,28 @@
             SELECT student_seq.NEXTVAL FROM dual
         </selectKey>
         INSERT INTO student (id, student_num, created_at, dept_id, user_id)
-        VALUES (#{id}, #{studentNum}, #{status}, SYSDATE, #{deptId}, #{userId})
+        VALUES (#{id}, #{studentNum}, SYSDATE, #{deptId}, #{userId})
     </insert>
 
     <update id="updateStudent" parameterType="com.ac.kr.academy.domain.user.Student">
         UPDATE student
-        SET status = #{status},
+        <set>
+        <if test="deptId != null">
+            dept_id = #{deptId},
+        </if>
+        <if test="endedAt != null">
             ended_at = #{endedAt},
-            dept_id = #{deptId}
-        WHERE id = #{id}
+        </if>
+        <if test="status != null">
+            status = #{status}
+        </if>
+        </set>
+        WHERE user_id = #{userId}
     </update>
 
     <delete id="deleteStudent" parameterType="long">
         DELETE FROM student
-        WHERE id = #{id}
+        WHERE user_id = #{userId}
     </delete>
 
     <select id="findByUserId" resultType="com.ac.kr.academy.domain.user.Student">

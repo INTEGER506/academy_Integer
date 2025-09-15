@@ -7,12 +7,14 @@ import com.ac.kr.academy.mapper.user.advisor.AdvisorMapper;
 import com.ac.kr.academy.mapper.user.professor.ProfessorMapper;
 import com.ac.kr.academy.mapper.user.staff.StaffMapper;
 import com.ac.kr.academy.mapper.user.student.StudentMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Year;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -27,6 +29,8 @@ public class UserService {
     private final AdvisorMapper advisorMapper;
     private final AdminMapper adminMapper;
     private final BCryptPasswordEncoder passwordEncoder;
+
+    private final ObjectMapper objectMapper;
 
     //사용자 등록
     @Transactional
@@ -66,12 +70,41 @@ public class UserService {
     public void updateUser(User user, Object roleEntity){
         userMapper.updateUser(user);
 
-        if("ROLE_STUDENT".equals(user.getRole())){
-            studentMapper.updateStudent((Student) roleEntity);
-        } else if ("ROLE_PROFESSOR".equals(user.getRole())) {
-            professorMapper.updateProfessor((Professor) roleEntity);
-        } else if ("ROLE_STAFF".equals(user.getRole())) {
-            staffMapper.updateStaff((Staff) roleEntity);
+        //object 타입인 roleEntity를 ObjectMapper를 이용해 형변환
+        if(roleEntity instanceof LinkedHashMap){
+            if("ROLE_STUDENT".equals(user.getRole())){
+                Student student = objectMapper.convertValue(roleEntity, Student.class);
+                if(student.getDeptId() != null || student.getEndedAt() !=null || student.getStatus() != null){
+                    studentMapper.updateStudent(student);
+                }
+            } else if ("ROLE_PROFESSOR".equals(user.getRole())) {
+                Professor professor = objectMapper.convertValue(roleEntity, Professor.class);
+                if(professor.getDeptId() != null || professor.getEndedAt() !=null){
+                    professorMapper.updateProfessor(professor);
+                }
+            } else if ("ROLE_STAFF".equals(user.getRole())) {
+                Staff staff = objectMapper.convertValue(roleEntity, Staff.class);
+                if(staff.getEndedAt() != null){
+                    staffMapper.updateStaff(staff);
+                }
+            }
+        } else {    //object 타입일때
+            if("ROLE_STUDENT".equals(user.getRole())){
+                Student student = (Student) roleEntity;
+                if(student.getDeptId() != null || student.getEndedAt() !=null || student.getStatus() != null){
+                    studentMapper.updateStudent(student);
+                }
+            } else if ("ROLE_PROFESSOR".equals(user.getRole())) {
+                Professor professor = (Professor) roleEntity;
+                if(professor.getDeptId() != null || professor.getEndedAt() !=null){
+                    professorMapper.updateProfessor(professor);
+                }
+            } else if ("ROLE_STAFF".equals(user.getRole())) {
+                Staff staff = (Staff) roleEntity;
+                if(staff.getEndedAt() != null){
+                    staffMapper.updateStaff(staff);
+                }
+            }
         }
     }
 
