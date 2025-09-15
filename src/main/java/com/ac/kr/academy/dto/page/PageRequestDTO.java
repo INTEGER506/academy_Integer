@@ -33,7 +33,7 @@ public class PageRequestDTO {
 /*  예시
     알림 페이지
     @GetMapping("/notice")
-    public String getNoticeList(@RequestParam(defaultValue = "1") int page, Model model) {
+    public String getNoticeList(@RequestParam int page, Model model) {
 
         // 1. PagingRequest 객체를 생성
         PagingRequest pagingRequest = new PagingRequest();
@@ -50,7 +50,7 @@ public class PageRequestDTO {
         // 5. Model에 담아서 View로 전달
         model.addAttribute("list", noticeList);
 
-        return "notice/list"; // Nntice/list.jsp
+        return "notice/list"; // Notice/list.jsp
     }
 
     // pagingRequest.setPageSize()의 값만 바꾸면 됌
