@@ -51,7 +51,7 @@ public class AdminRestController {
     }
 
     //사용자 전체 조회
-    @GetMapping("/users/all")
+    @GetMapping("/user/all")
     public ResponseEntity<?> getAllUsers(){
         List<User> userList = userService.getAllUsers();
         if(userList.isEmpty()){
@@ -61,7 +61,7 @@ public class AdminRestController {
     }
 
     //권한별 사용자 조회
-    @GetMapping("/users/role")
+    @GetMapping("/user/role")
     public ResponseEntity<?> getUsersByRole(@RequestParam String role){
         List<User> userList = userService.getUsersByRole(role);
         if(userList.isEmpty()){
