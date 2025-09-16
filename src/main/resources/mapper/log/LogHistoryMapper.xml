@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ac.kr.academy.mapper.log.LogHistoryMapper">
+    <insert id="insertLoginLog" parameterType="com.ac.kr.academy.domain.log.LogHistory">
+        <selectKey keyProperty="id" order="BEFORE" resultType="long">
+            SELECT log_history_seq.NEXTVAL FROM dual
+        </selectKey>
+        INSERT INTO log_history (id, user_id, username, login_time, ip_address)
+        VALUES (#{id}, #{userId}, #{username}, #{loginTime}, #{ipAddress})
+    </insert>
+
+    <update id="updateLogoutTime" parameterType="long">
+        UPDATE log_history
+        SET logout_time = CURRENT_TIMESTAMP
+        WHERE user_id = #{userId}
+        AND logout_time IS NULL
+    </update>
+
+</mapper>

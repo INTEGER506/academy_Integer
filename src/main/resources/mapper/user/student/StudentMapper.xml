@@ -30,7 +30,7 @@
 
     <delete id="deleteStudent" parameterType="long">
         DELETE FROM student
-        WHERE user_id = #{userId}
+        WHERE user_id = #{id}
     </delete>
 
     <select id="findByUserId" resultType="com.ac.kr.academy.domain.user.Student">

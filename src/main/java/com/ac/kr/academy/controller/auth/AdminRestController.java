@@ -10,6 +10,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 관리자 전용 API
@@ -32,8 +33,10 @@ public class AdminRestController {
                                            @RequestParam String email,
                                            @RequestParam String name){
         try{
-            User createUser = userService.createUser(role, deptId, email, name);
-            return ResponseEntity.ok("계정 생성 완료, 로그인 ID: " + createUser.getUsername());
+            Map<String, String> userInfo = userService.createUser(role, deptId, email, name);
+
+            return ResponseEntity.ok("계정 생성 완료, 로그인 ID: " + userInfo.get("username")
+                                            + "임시 비밀번호: " + userInfo.get("password"));
         } catch (IllegalArgumentException e){
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -71,7 +74,7 @@ public class AdminRestController {
     }
 
     //사용자 정보 수정
-    @PutMapping("/user/{userId}")
+    @PutMapping("/update-user/{userId}")
     public ResponseEntity<?> updateUser(@PathVariable Long userId,
                                         @RequestBody UpdateUserRequestDTO requestDTO){
             if(!userId.equals(requestDTO.getUser().getId())){
@@ -82,22 +85,22 @@ public class AdminRestController {
     }
 
     //사용자 삭제
-    @DeleteMapping("/user/{userId}")
+    @DeleteMapping("/delete-user/{userId}")
     public ResponseEntity<?> deleteUser(@PathVariable Long userId){
         try{
             User user = userService.findById(userId);
             if(user == null){
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("사용자를 찾을 수 없습니다.");
             }
-            userService.deleteUser(user);
+            userService.deleteUser(userId);
             return ResponseEntity.ok("사용자 삭제를 완료했습니다.");
         } catch (Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("사용자 삭제 중 오류가 발생했습니다.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("사용자 삭제 중 오류가 발생했습니다. " + e.getMessage());
         }
     }
 
     //학생 상태값 변경 (재학중, 휴학중, 졸업)
-    @PutMapping("/user/{userId}/status")
+    @PutMapping("/update-user/{userId}/status")
     public ResponseEntity<?> updateStudentStatus(@PathVariable Long userId, @RequestParam String status){
         userService.updateStudentStatus(userId, status);
         return ResponseEntity.ok("사용자 iD " + userId + "의 상태를 '" + status + "'로 변경 완료했습니다.");

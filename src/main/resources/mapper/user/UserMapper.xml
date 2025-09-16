@@ -28,7 +28,7 @@
         <if test="role != null">
             role = #{role},
         </if>
-        <if test="password != null">
+        <if test="password != null and password !=''">
             password = #{password, jdbcType=VARCHAR}
         </if>
         </set>
@@ -45,21 +45,24 @@
     </select>
 
     <select id="findAllUsers" resultType="com.ac.kr.academy.domain.user.User">
-        SELECT * FROM users
+        SELECT id, username, password_temp, email, phone, name, role
+        FROM users
     </select>
 
     <select id="findById" resultType="com.ac.kr.academy.domain.user.User" parameterType="long">
-        SELECT * FROM users
+        SELECT id, username, password_temp, email, phone, name, role
+        FROM users
         WHERE id = #{id}
     </select>
 
     <select id="findAllUsersByRole" resultType="com.ac.kr.academy.domain.user.User">
-        SELECT id FROM users
+        SELECT id, username, password_temp, email, phone, name, role
+        FROM users
         WHERE role = #{role}
     </select>
 
     <select id="findByUsername" resultType="com.ac.kr.academy.domain.user.User" parameterType="string">
-        SELECT *
+        SELECT id, username, password_temp, email, phone, name, role
         FROM users
         WHERE username = #{username}
     </select>
@@ -76,5 +79,12 @@
         SET username = #{username}
         WHERE id = #{id}
     </update>
+
+    <!-- 로그인 전용 메서드 -->
+    <select id="findByUsernameForLogin" resultType="com.ac.kr.academy.domain.user.User" parameterType="string">
+        SELECT *
+        FROM users
+        WHERE username = #{username}
+    </select>
 
 </mapper>

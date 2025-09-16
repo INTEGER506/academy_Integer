@@ -2,7 +2,7 @@ package com.ac.kr.academy.domain.user;
 
 import lombok.Data;
 
-import java.sql.Date;
+import java.util.Date;
 
 @Data
 public class Staff {
