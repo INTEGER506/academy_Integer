@@ -17,7 +17,10 @@ public interface NotificationMapper {
     //미확인 알림 개수 조회
     int countUnresolved(Long targetId);
 
-    //알림 확인 상태로 업데이트
+    //알림 확인 상태로 변경
     void markAsResolved(Long notiId);
+
+    //읽은 알림 전체 삭제
+    void deleteResolved();
 
 }
