@@ -22,7 +22,7 @@ public class CourseCreateRequestDTO {
     private String place;
     private String time;
 
-    // Lombok이 제대로 작동하지 않을 경우를 대비해 setter를 명시적으로 추가
+
     public void setId(Long id) {
         this.id = id;
     }

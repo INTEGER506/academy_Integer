@@ -23,6 +23,8 @@ public interface EnrollmentService {
 
     List<Enrollment> findAllEnrollments();
 
+    List<Enrollment> findEnrollmentsByStudentId(Long studentId);
+
     Optional<Enrollment> findById(Long id);
 
 }

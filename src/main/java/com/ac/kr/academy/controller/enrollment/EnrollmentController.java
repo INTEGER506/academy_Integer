@@ -3,6 +3,9 @@ package com.ac.kr.academy.controller.enrollment;
 
 import com.ac.kr.academy.domain.enrollment.Enrollment;
 import com.ac.kr.academy.service.enrollment.EnrollmentService;
+import com.ac.kr.academy.service.course.CourseService;
+import com.ac.kr.academy.dto.course.CourseListResponseDTO;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -12,63 +15,70 @@ import java.util.List;
 
 @Controller
 @RequestMapping("/enrollments")
+@RequiredArgsConstructor
 public class EnrollmentController {
 
     private final EnrollmentService enrollmentService;
+    private final CourseService courseService;
 
-    public EnrollmentController(EnrollmentService enrollmentService) {
-        this.enrollmentService = enrollmentService;
-    }
-
-    // 모든 수강 신청 목록 페이지
-    @GetMapping("/list")
-    public String list(Model model){
-        List<Enrollment> enrollments = enrollmentService.findAllEnrollments();
-        model.addAttribute("enrollments", enrollments);
+    // 수강 신청 가능한 강의 목록 페이지
+    @GetMapping
+    public String courseList(Model model) {
+        List<CourseListResponseDTO> courses = courseService.findAll(null, null); // 모든 강의 조회
+        model.addAttribute("courses", courses);
         return "enrollment/list";
     }
 
-    // 수강 신청 폼 페이지
-    @GetMapping("/new")
-    public String enrollmentForm(Model model){
-        model.addAttribute("enrollment", new Enrollment());
-        return "enrollment/form";
+    // 강의 상세 페이지 및 수강 신청
+    @GetMapping("/{courseId}")
+    public String courseDetail(@PathVariable Long courseId, Model model) {
+        CourseListResponseDTO course = courseService.findById(courseId);
+        model.addAttribute("course", course);
+        return "enrollment/detail";
     }
 
-    // 수강 신청 처리
-    @PostMapping
-    public String create(@RequestParam Long courseId,
-                         @RequestParam Long studentId, RedirectAttributes redirectAttributes){
-        enrollmentService.enroll(courseId, studentId);
-        redirectAttributes.addFlashAttribute("message", "수강 신청이 완료되었습니다.");
-        return "redirect:/enrollments/list";
+    // 내 수강 목록 페이지
+    @GetMapping("/my-courses")
+    public String myCourses(Model model) {
+
+        Long studentId = 1L;
+        List<Enrollment> enrollments = enrollmentService.findEnrollmentsByStudentId(studentId);
+        model.addAttribute("enrollments", enrollments);
+        return "enrollment/my-courses";
     }
 
-    // 수강 신청 상세 페이지
-    @GetMapping("/{id}")
-    public String enrollmentDetails(@PathVariable Long id, Model model){
-        Enrollment enrollment = enrollmentService.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Invalid enrollment ID:" + id));
-        model.addAttribute("enrollment", enrollment);
-        return "enrollment/details";
+    // 수강 신청 처리 (POST)
+    @PostMapping("/{courseId}")
+    public String enroll(@PathVariable Long courseId,
+                         RedirectAttributes redirectAttributes) {
+
+        Long studentId = 1L;
+
+        try {
+            enrollmentService.enroll(courseId, studentId);
+            redirectAttributes.addFlashAttribute("message", "수강 신청이 완료되었습니다.");
+            // 수강 신청 목록 페이지로 리다이렉션
+            return "redirect:/enrollments/my-courses";
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            // 오류 발생 시 강의 목록 페이지로 리다이렉션
+            return "redirect:/enrollments";
+        }
     }
 
-    // 수정 폼 페이지
-    @GetMapping("/edit/{id}")
-    public String editForm(@PathVariable Long id, Model model){
-        Enrollment enrollment = enrollmentService.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Invalid enrollment ID:" + id));
-        model.addAttribute("enrollment", enrollment);
-        return "enrollment/edit";
-    }
+    // 수강 취소 처리 (POST)
+    @PostMapping("/cancel/{courseId}")
+    public String cancel(@PathVariable Long courseId,
+                         RedirectAttributes redirectAttributes) {
 
-    //수강 신청 삭제 처리
-    @PostMapping("/delete/{id}")
-    public String delete(@PathVariable Long id,  RedirectAttributes redirectAttributes){
-        Enrollment enrollment = enrollmentService.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("삭제할 수강 신청 내역이 존재하지 않습니다. ID: " + id));
-        enrollmentService.cancel(enrollment.getCourseId(), enrollment.getStudentId());
-        redirectAttributes.addFlashAttribute("message", "수강 신청이 취소되었습니다.");
-        return "redirect:/enrollments/list";
+        Long studentId = 1L;
+
+        try {
+            enrollmentService.cancel(courseId, studentId);
+            redirectAttributes.addFlashAttribute("message", "수강 취소가 완료되었습니다.");
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/enrollments/my-courses";
     }
 }

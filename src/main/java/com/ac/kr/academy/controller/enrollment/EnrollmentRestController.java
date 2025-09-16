@@ -1,15 +1,17 @@
 package com.ac.kr.academy.controller.enrollment;
 
 
-import com.ac.kr.academy.domain.enrollment.Enrollment;
-import com.ac.kr.academy.dto.course.CourseDayTimeDTO;
 import com.ac.kr.academy.service.enrollment.EnrollmentService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.http.HttpStatus;
 
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/enrollments")
@@ -18,50 +20,32 @@ public class EnrollmentRestController {
 
     private final EnrollmentService enrollmentService;
 
-    // 수강 신청
-    @PostMapping("/{courseId}")
-    public ResponseEntity<String> enroll(@PathVariable Long courseId) {
 
-        Long studentId = 1L; // 로그인한 학생의 ID와 교환
+    // 수강 신청 처리 (POST) - RESTful API
+    // 요청 URL: POST /api/enrollments/{courseId}?studentId={studentId}
+    @PostMapping("/{courseId}")
+    public ResponseEntity<Void> enroll(@PathVariable Long courseId,
+                                       @RequestParam Long studentId) {
         try {
             enrollmentService.enroll(courseId, studentId);
-            return new ResponseEntity<>("수강 신청이 완료되었습니다.", HttpStatus.CREATED);
+            return new ResponseEntity<>(HttpStatus.CREATED); // 201 Created
         } catch (IllegalArgumentException | IllegalStateException e) {
-            return new  ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST); // 400 Bad Request
         }
     }
 
-    // 학생의 수강 신청 내역 조회
-    @GetMapping("/my-courses")
-    public ResponseEntity<List<CourseDayTimeDTO>> getMyEnrolledCourses() {
-        Long studentId = 1L; // 로그인한 학생의 ID와 교환
-        List<CourseDayTimeDTO> enrolledCourses = enrollmentService.findEnrolledCourseDayTimesByStudentId(studentId);
-        return new  ResponseEntity<>(enrolledCourses, HttpStatus.OK);
-    }
-
-    // 해당 강의의 모든 수강 신청 내역 조회(교수/관리자용)
-    @GetMapping("/courses/{courseId}")
-    public ResponseEntity<List<Enrollment>> getEnrollmentsByCourse(@PathVariable Long  courseId) {
-        List<Enrollment> enrollments = enrollmentService.findEnrollmentsByCourseId(courseId);
-        return new  ResponseEntity<>(enrollments, HttpStatus.OK);
-    }
-
-    // 모든 수강 신청 내역 조회(관리자용)
-    @GetMapping
-    public ResponseEntity<List<Enrollment>> getAllEnrollments() {
-        List<Enrollment> allEnrollments = enrollmentService.findAllEnrollments();
-        return new  ResponseEntity<>(allEnrollments, HttpStatus.OK);
-    }
-
-    // 수강 취소
+    // 수강 취소 처리 (DELETE) - RESTful API
+    // 요청 URL: DELETE /api/enrollments/{courseId}?studentId={studentId}
     @DeleteMapping("/{courseId}")
-    public ResponseEntity<String> cancel(@PathVariable Long courseId) {
-        Long studentId = 1L; //로그인한 학생 ID와 교환
+    public ResponseEntity<Void> deleteEnrollment(
+            @PathVariable("courseId") Long courseId,
+            @RequestParam("studentId") Long studentId) {
+
         try {
             enrollmentService.cancel(courseId, studentId);
-            return new ResponseEntity<>("수강 취소가 완료되었습니다.", HttpStatus.OK);
+            return ResponseEntity.ok().build(); // 200 OK
         } catch (IllegalArgumentException e) {
-            return new  ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+            return ResponseEntity.notFound().build(); // 404 Not Found
         }
     }
 }

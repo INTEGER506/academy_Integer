@@ -93,7 +93,7 @@
         WHERE id = #{courseId}
     </update>
 
-    <select id="findCreditByCourseId" resultType="int">
+    <select id="findCreditByCourseId" resultType="java.lang.Integer">
         SELECT s.credit
         FROM course c
         JOIN subject s ON c.subject_id = s.id

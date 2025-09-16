@@ -20,9 +20,12 @@
 
     <!-- 중복 확인 -->
     <select id="findByCourseIdAndStudentId" resultType="com.ac.kr.academy.domain.enrollment.Enrollment">
-        SELECT id, course_id, student_id
-        FROM enrollment
-        WHERE course_id = #{courseId} AND student_id = #{studentId}
+        SELECT
+            id, course_id, student_id
+        FROM
+            enrollment
+        WHERE
+            course_id = #{courseId} AND student_id = #{studentId}
     </select>
 
     <!-- 강의에 수강 신청한 학생 수 조회 -->
