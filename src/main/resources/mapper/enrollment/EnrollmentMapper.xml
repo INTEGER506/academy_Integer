@@ -71,6 +71,30 @@
         FROM enrollment
     </select>
 
+    <!-- 학생 ID로 수강 신청 내역 조회 -->
+    <select id="findByStudentId" parameterType="long" resultType="com.ac.kr.academy.domain.enrollment.Enrollment">
+        SELECT
+            id,
+            course_id,
+            student_id
+        FROM enrollment
+        WHERE student_id = #{studentId}
+    </select>
+
+    <!-- 학생이 신청한 강의 목록 조회 (DTO 반환) -->
+    <select id="findMyCourses" resultType="com.ac.kr.academy.dto.course.CourseListResponseDTO">
+        SELECT c.id as id,
+               s.name as subjectName,
+               c.day_of_week as dayOfWeek,
+               c.time as time,
+               c.place as place,
+               s.credit as credit
+        FROM enrollment e
+            JOIN course c ON e.course_id = c.id
+            JOIN subject s ON c.subject_id = s.id
+        WHERE e.student_id = #{studentId}
+    </select>
+
     <!-- 수강 취소 -->
     <delete id="deleteByCourseIdAndStudentId">
         DELETE FROM enrollment

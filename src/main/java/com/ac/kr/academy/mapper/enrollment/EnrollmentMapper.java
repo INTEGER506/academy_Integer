@@ -3,6 +3,7 @@ package com.ac.kr.academy.mapper.enrollment;
 
 import com.ac.kr.academy.domain.enrollment.Enrollment;
 import com.ac.kr.academy.dto.course.CourseDayTimeDTO;
+import com.ac.kr.academy.dto.course.CourseListResponseDTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import java.util.List;
@@ -47,4 +48,7 @@ public interface EnrollmentMapper {
 
     // 강의 ID로 수강 신청 내역 삭제
     void deleteByCourseId(Long courseId);
+
+    // 학생이 신청한 강의 목록 조회 (DTO 반환)
+    List<CourseListResponseDTO> findMyCourses(@Param("studentId") Long studentId);
 }

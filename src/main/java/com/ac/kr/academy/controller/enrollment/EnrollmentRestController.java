@@ -1,16 +1,15 @@
 package com.ac.kr.academy.controller.enrollment;
 
 
+import com.ac.kr.academy.dto.course.CourseListResponseDTO;
 import com.ac.kr.academy.service.enrollment.EnrollmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
+
+import java.util.List;
 
 
 @RestController
@@ -28,24 +27,31 @@ public class EnrollmentRestController {
                                        @RequestParam Long studentId) {
         try {
             enrollmentService.enroll(courseId, studentId);
-            return new ResponseEntity<>(HttpStatus.CREATED); // 201 Created
+            return new ResponseEntity<>(HttpStatus.CREATED);
         } catch (IllegalArgumentException | IllegalStateException e) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST); // 400 Bad Request
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
 
-    // 수강 취소 처리 (DELETE) - RESTful API
-    // 요청 URL: DELETE /api/enrollments/{courseId}?studentId={studentId}
     @DeleteMapping("/{courseId}")
-    public ResponseEntity<Void> deleteEnrollment(
-            @PathVariable("courseId") Long courseId,
-            @RequestParam("studentId") Long studentId) {
-
+    public ResponseEntity<Void> deleteEnrollment(@PathVariable Long courseId,
+                                                 @RequestParam Long studentId) {
         try {
             enrollmentService.cancel(courseId, studentId);
-            return ResponseEntity.ok().build(); // 200 OK
+            return ResponseEntity.ok().build();
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build(); // 404 Not Found
+            return ResponseEntity.notFound().build();
         }
     }
+
+
+    // 내 수강 목록 조회 (GET)
+    // 요청 URL: GET /api/enrollments/my-courses/{studentId}
+    @GetMapping("/my-courses/{studentId}")
+    public ResponseEntity<List<CourseListResponseDTO>> myCourses(@PathVariable Long studentId) {
+        List<CourseListResponseDTO> myCourses = enrollmentService.findMyCourses(studentId);
+        return ResponseEntity.ok(myCourses);
+    }
+
 }
+

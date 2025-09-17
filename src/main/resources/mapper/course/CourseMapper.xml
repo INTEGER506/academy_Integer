@@ -104,20 +104,21 @@
         DELETE FROM course WHERE id = #{id}
     </delete>
 
-    <select id="findCourseById" resultType="com.ac.kr.academy.domain.course.Course">
+    <select id="findCourseById" resultType="com.ac.kr.academy.domain.course.Course" parameterType="long">
         SELECT
-            id,
-            professor_id,
-            subject_id,
-            semester_id,
-            capacity,
-            num_of_student,
-            day_of_week,
-            place,
-            status,
-            time
-        FROM course
-        WHERE id = #{id}
+            c.id,
+            c.place,
+            c.day_of_week AS dayOfWeek,
+            c.capacity,
+            c.num_of_student AS numOfStudent,
+            c.status,
+            c.time,
+            c.subject_id AS subjectId,
+            c.professor_id AS professorId,
+            c.semester_id AS semesterId
+        FROM course c
+        WHERE c.id = #{id}
     </select>
+
 </mapper>
 
