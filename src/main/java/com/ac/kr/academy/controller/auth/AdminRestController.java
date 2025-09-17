@@ -1,8 +1,11 @@
 package com.ac.kr.academy.controller.auth;
 
+import com.ac.kr.academy.domain.log.LogHistory;
 import com.ac.kr.academy.domain.user.User;
 import com.ac.kr.academy.dto.auth.UpdateUserRequestDTO;
+import com.ac.kr.academy.service.log.LogHistoryService;
 import com.ac.kr.academy.service.user.UserService;
+import com.ac.kr.academy.util.LogUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +28,7 @@ import java.util.Map;
 public class AdminRestController {
 
     private final UserService userService;
+    private final LogHistoryService logHistoryService;
 
     //로그인 ID 자동생성
     @PostMapping("/create-account")
@@ -104,5 +108,19 @@ public class AdminRestController {
     public ResponseEntity<?> updateStudentStatus(@PathVariable Long userId, @RequestParam String status){
         userService.updateStudentStatus(userId, status);
         return ResponseEntity.ok("사용자 iD " + userId + "의 상태를 '" + status + "'로 변경 완료했습니다.");
+    }
+
+    //접속 기록 조회
+    @GetMapping("/logs/history")
+    public ResponseEntity<?> getLogsHistory(){
+        List<LogHistory> logs = logHistoryService.getAllLogs();
+        return ResponseEntity.ok(logs);
+    }
+
+    //로그 모니터링
+    @GetMapping("/logs/monitor")
+    public ResponseEntity<?> getLogs(@RequestParam(defaultValue = "10") int lines,
+                                     @RequestParam(required = false) String filter){
+        return ResponseEntity.ok(LogUtils.tail(lines, filter));
     }
 }

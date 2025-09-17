@@ -45,3 +45,7 @@ out
 gen
 .gradle
 build
+
+#로그
+/logs/
+/*.log

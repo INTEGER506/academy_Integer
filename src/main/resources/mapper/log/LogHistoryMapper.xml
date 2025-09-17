@@ -15,8 +15,17 @@
     <update id="updateLogoutTime" parameterType="long">
         UPDATE log_history
         SET logout_time = CURRENT_TIMESTAMP
-        WHERE user_id = #{userId}
-        AND logout_time IS NULL
+        WHERE id = (
+            SELECT MAX(id) FROM log_history
+            WHERE user_id = #{userId}
+              AND logout_time IS NULL
+            )
     </update>
+
+    <select id="findAllLogs" resultType="com.ac.kr.academy.domain.log.LogHistory">
+        SELECT *
+        FROM log_history
+        ORDER BY login_time DESC
+    </select>
 
 </mapper>
