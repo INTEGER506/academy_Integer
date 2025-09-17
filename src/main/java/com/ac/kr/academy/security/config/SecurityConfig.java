@@ -4,7 +4,6 @@ import com.ac.kr.academy.security.CustomUserDetailsService;
 import com.ac.kr.academy.security.jwt.JwtAuthenticationFilter;
 import com.ac.kr.academy.security.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -25,7 +24,7 @@ public class SecurityConfig {
     private final JwtTokenProvider tokenProvider;
 
     @Bean
-    public BCryptPasswordEncoder passwordEncoder() {
+    public BCryptPasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
     }
 

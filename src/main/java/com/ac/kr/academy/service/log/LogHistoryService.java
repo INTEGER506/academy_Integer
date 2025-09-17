@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -27,5 +28,10 @@ public class LogHistoryService {
     //로그아웃 시간 업데이트
     public void userLogoutTime(Long userId){
         logHistoryMapper.updateLogoutTime(userId);
+    }
+
+    //모든 접속 기록 조회
+    public List<LogHistory> getAllLogs(){
+        return logHistoryMapper.findAllLogs();
     }
 }
