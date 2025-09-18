@@ -32,7 +32,7 @@ public class MyPageRestController {
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/me")
+    @PutMapping("/update-me")
     public ResponseEntity<?> updateMyInfo(@RequestBody UpdateUserRequestDTO requestDTO, Authentication auth){
         User user = requestDTO.getUser();
         Object roleEntity = requestDTO.getRoleEntity();

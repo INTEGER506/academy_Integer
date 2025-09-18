@@ -9,7 +9,7 @@ public interface ProfessorMapper {
 
     void insertProfessor(Professor professor);
     int updateProfessor(Professor professor);
-    int deleteProfessor(@Param("id") Long id);
+    int deleteProfessor(@Param("id") Long userId);
 
     Professor findByUserId(@Param("userId") Long userId);
 }

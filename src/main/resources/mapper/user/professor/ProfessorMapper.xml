@@ -14,19 +14,20 @@
 
     <update id="updateProfessor" parameterType="com.ac.kr.academy.domain.user.Professor">
         UPDATE professor
-        SET
+        <set>
         <if test="endedAt != null">
             ended_at = #{endedAt},
         </if>
         <if test="deptId != null">
             dept_id = #{deptId}
         </if>
+        </set>
         WHERE user_id = #{userId}
     </update>
 
     <delete id="deleteProfessor" parameterType="long">
         DELETE FROM professor
-        WHERE user_id = #{userId}
+        WHERE user_id = #{id}
     </delete>
 
     <select id="findByUserId" resultType="com.ac.kr.academy.domain.user.Professor">

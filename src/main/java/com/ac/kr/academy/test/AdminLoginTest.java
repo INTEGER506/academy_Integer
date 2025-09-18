@@ -17,4 +17,4 @@ public class AdminLoginTest {
         log.info("testPassword:{}", encodedPassword);
     }
 }
-//$2a$10$ShqY671MqCXxZPqcSTwk9O4Cde.bUwuXqSj6tVkeTs.b5dW7pYnwm
+//$2a$10$TjEx.NZBVvxzKwyZ20UBfOlUgPIWNLsl.ja5xVqkuqtTSy3TrTA5G

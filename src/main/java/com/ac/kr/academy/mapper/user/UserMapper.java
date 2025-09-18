@@ -32,4 +32,7 @@ public interface UserMapper {
     void updateUserPassword(@Param("username") String username,
                             @Param("password") String password,
                             @Param("passwordTemp") boolean passwordTemp);
+
+    //로그인 전용
+    User findByUsernameForLogin(String username);
 }

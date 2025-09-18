@@ -9,7 +9,7 @@ public interface StudentMapper {
 
     void insertStudent(Student student);
     int updateStudent(Student student); //마이페이지, 관리자 페이지
-    int deleteStudent(@Param("id") Long id);
+    int deleteStudent(@Param("id") Long userId);
 
     Student findByUserId(@Param("userId") Long userId);
 

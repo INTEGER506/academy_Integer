@@ -9,7 +9,7 @@ public interface StaffMapper {
 
     void insertStaff(Staff staff);
     int updateStaff(Staff staff);
-    int deleteStaff(@Param("id") Long id);
+    int deleteStaff(@Param("id") Long userId);
 
     Staff findByUserId(@Param("userId") Long userId);
 }
