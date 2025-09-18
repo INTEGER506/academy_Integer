@@ -1,18 +1,24 @@
 package com.ac.kr.academy.domain.course;
 
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
-
-import java.sql.Date;
+import lombok.NoArgsConstructor;
 
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Course {
     private Long id;
-    private String place;
-    private Date dayOfWeek;
-    private Date stratPeriod;
-    private Date endPeriod;
-    private Long capacity;
-    private Long semesterId;
+    private Long professorId;
     private Long subjectId;
+    private Long semesterId;
+    private Integer capacity;
+    private Integer numOfStudent;
+    private String dayOfWeek;
+    private String place;
+    private String status; //강의 상태
+    private String time;
 }

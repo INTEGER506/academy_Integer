@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ac.kr.academy.mapper.professor.ProfessorMapper">
+
+    <!-- 등록 -->
+    <insert id="insert">
+        <selectKey keyProperty="id" order="BEFORE" resultType="long">
+            SELECT professor_seq.NEXTVAL FROM dual
+        </selectKey>
+            INSERT INTO professor(
+            id, professor_num, created_at, ended_at, dept_id, user_id
+        )
+            VALUES(
+            #{id}, #{professorNum}, #{createdAt}, #{endedAt}, #{deptId}, #{userId}
+        )
+    </insert>
+    
+    <!-- 전체 조회 -->
+    <select id="findAll" resultType="com.ac.kr.academy.domain.professor.Professor">
+        SELECT
+            id, professor_num AS professorNum, created_at AS createdAt, ended_at AS endedAt,
+            dept_id AS deptId, user_id AS userId
+        FROM professor
+        ORDER BY id desc
+    </select>
+
+    <!-- 단건 조회 -->
+    <select id="findById" resultType="com.ac.kr.academy.domain.professor.Professor">
+        SELECT
+            id, professor_num AS professorNum, created_at AS createdAt, ended_at AS endedAt,
+            dept_id AS deptId, user_id AS userId
+        FROM professor
+        WHERE id = #{id}
+    </select>
+
+    <select id="findByUserId" resultType="com.ac.kr.academy.domain.professor.Professor">
+        SELECT
+            id, professor_num AS professorNum, created_at AS createdAt, ended_at AS endedAt,
+            dept_id AS deptId, user_id AS userId
+        FROM professor
+        WHERE user_id = #{userId}
+    </select>
+
+    <!-- 수정 -->
+    <update id="update">
+        UPDATE professor
+        <set>
+            <if test="professorNum != null">professor_num = #{professorNum},</if>
+            <if test="createdAt != null">created_at = #{createdAt},</if>
+            <if test="endedAt != null">ended_at = #{endedAt},</if>
+            <if test="deptId != null">dept_id = #{deptId},</if>
+            <if test="userId != null">user_id = #{userId}</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!-- 삭제 -->
+    <delete id="deleteById">
+        DELETE FROM professor WHERE id = #{id}
+    </delete>
+
+</mapper>

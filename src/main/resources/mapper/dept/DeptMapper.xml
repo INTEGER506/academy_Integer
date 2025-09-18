@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ac.kr.academy.mapper.dept.DeptMapper">
+
+    <!-- 학과 등록 -->
+    <insert id="insert">
+        <selectKey keyProperty="id" order="BEFORE" resultType="long">
+            SELECT dept_seq.NEXTVAL FROM dual
+        </selectKey>
+            INSERT INTO dept(id, dept_name)
+            VALUES(#{id}, #{deptName})
+    </insert>
+
+    <!-- 학과 전체 조회 -->
+    <select id="findAll" resultType="com.ac.kr.academy.domain.dept.Dept">
+        SELECT id, dept_name AS deptName
+        FROM dept
+        ORDER BY id desc
+    </select>
+
+    <!-- 학과 단건 조회 -->
+    <select id="findById" resultType="com.ac.kr.academy.domain.dept.Dept">
+        SELECT id, dept_name AS deptName
+        FROM dept
+        WHERE id = #{id}
+    </select>
+
+    <!-- 학과 수정 -->
+    <update id="update">
+        UPDATE dept
+        <set>
+            dept_name = #{deptName}
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!-- 학과 삭제 -->
+    <delete id="deleteById">
+        DELETE FROM dept WHERE id = #{id}
+    </delete>
+</mapper>

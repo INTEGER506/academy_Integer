@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ac.kr.academy.mapper.enrollment.EnrollmentMapper">
+
+    <!-- 수강 신청 저장 -->
+    <insert id="save">
+        <selectKey keyProperty="id" order="BEFORE" resultType="long">
+            SELECT enrollment_seq.NEXTVAL FROM dual
+        </selectKey>
+        INSERT INTO enrollment (
+        id, course_id, student_id
+        )
+        VALUES (
+        #{id}, #{courseId}, #{studentId}
+        )
+    </insert>
+
+    <!-- 중복 확인 -->
+    <select id="findByCourseIdAndStudentId" resultType="com.ac.kr.academy.domain.enrollment.Enrollment">
+        SELECT
+            id, course_id, student_id
+        FROM
+            enrollment
+        WHERE
+            course_id = #{courseId} AND student_id = #{studentId}
+    </select>
+
+    <!-- 강의에 수강 신청한 학생 수 조회 -->
+    <select id="countEnrollmentsByCourseId" resultType="int">
+        SELECT COUNT(*)
+        FROM enrollment
+        WHERE course_id = #{courseId}
+    </select>
+
+    <!-- 총 학점 -->
+    <select id="findTotalCreditsByStudentId" resultType="int">
+        SELECT SUM(s.credit)
+        FROM enrollment e
+                 JOIN course c ON e.course_id = c.id
+                 JOIN subject s ON c.subject_id = s.id
+        WHERE e.student_id = #{studentId}
+    </select>
+
+    <!-- 시간표 중복 확인 -->
+    <select id="findEnrolledCourseDayTimesByStudentId" resultType="com.ac.kr.academy.dto.course.CourseDayTimeDTO">
+        SELECT
+            c.day_of_week,
+            c.time
+        FROM enrollment e
+                 JOIN course c ON e.course_id = c.id
+        WHERE e.student_id = #{studentId}
+    </select>
+
+    <select id="findById" resultType="com.ac.kr.academy.domain.enrollment.Enrollment">
+        SELECT id, course_id, student_id
+        FROM enrollment
+        WHERE id = #{id}
+    </select>
+
+    <select id="findEnrollmentsByCourseId" resultType="com.ac.kr.academy.domain.enrollment.Enrollment">
+        SELECT id, course_id, student_id
+        FROM enrollment
+        WHERE course_id = #{courseId}
+    </select>
+
+    <select id="findAllEnrollments" resultType="com.ac.kr.academy.domain.enrollment.Enrollment">
+        SELECT id, course_id, student_id
+        FROM enrollment
+    </select>
+
+    <!-- 학생 ID로 수강 신청 내역 조회 -->
+    <select id="findByStudentId" parameterType="long" resultType="com.ac.kr.academy.domain.enrollment.Enrollment">
+        SELECT
+            id,
+            course_id,
+            student_id
+        FROM enrollment
+        WHERE student_id = #{studentId}
+    </select>
+
+    <!-- 학생이 신청한 강의 목록 조회 (DTO 반환) -->
+    <select id="findMyCourses" resultType="com.ac.kr.academy.dto.course.CourseListResponseDTO">
+        SELECT c.id as id,
+               s.name as subjectName,
+               c.day_of_week as dayOfWeek,
+               c.time as time,
+               c.place as place,
+               s.credit as credit
+        FROM enrollment e
+            JOIN course c ON e.course_id = c.id
+            JOIN subject s ON c.subject_id = s.id
+        WHERE e.student_id = #{studentId}
+    </select>
+
+    <!-- 수강 취소 -->
+    <delete id="deleteByCourseIdAndStudentId">
+        DELETE FROM enrollment
+        WHERE course_id = #{courseId} AND student_id = #{studentId}
+    </delete>
+
+    <delete id="deleteByCourseId">
+        DELETE FROM enrollment
+        WHERE course_id = #{courseId}
+    </delete>
+</mapper>

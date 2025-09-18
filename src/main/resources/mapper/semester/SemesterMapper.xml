@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ac.kr.academy.mapper.semester.SemesterMapper">
+
+    <insert id="insert">
+        <selectKey keyProperty="id" order="BEFORE" resultType="long">
+            SELECT semester_seq.NEXTVAL FROM dual
+        </selectKey>
+            INSERT INTO(id, name, year)
+            VALUES (#{id}, #{name}, #{year})
+    </insert>
+
+    <select id="findById" resultType="com.ac.kr.academy.domain.semester.Semester">
+        SELECT
+            id, name, year
+        FROM semester
+        WHERE id = #{id}
+    </select>
+
+    <select id="findAll" resultType="com.ac.kr.academy.domain.semester.Semester">
+        SELECT
+            id, name, year
+        FROM semester
+    </select>
+
+    <update id="update">
+        UPDATE semester
+        <set>
+            <if test="name != null">name = #{name},</if>
+            <if test="year != null">year = #{year}</if>
+        </set>
+        WHERE id =#{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM semester WHERE id = #{id}
+    </delete>
+</mapper>
