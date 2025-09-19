@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ac.kr.academy.mapper.grade.GradeMapper">
+
+    <resultMap id="GradeMap" type="com.ac.kr.academy.domain.grade.Grade">
+        <id property="id" column="id"/>
+        <result property="alphabet" column="alphabet" />
+        <result property="gpa" column="GPA" />
+        <result property="score" column="score" />
+        <result property="totalInt" column="total_int" />
+        <result property="midExam" column="mid_exam"/>
+        <result property="finalExam" column="final_exam"/>
+        <result property="assignment" column="assignment"/>
+        <result property="attendance" column="attendance"/>
+        <result property="studentId" column="student_id" />
+        <result property="enrollmentId" column="enrollment_id" />
+    </resultMap>
+
+<!--============================교수=================================-->
+    <!--특성 수업(course) 성적 총 건수 조회-->
+    <select id="countByCourse" resultMap="long">
+        SELECT COUNT(*) FROM grade g
+        JOIN enrollment e ON g.enrollment_id = e.id
+        JOIN student    s ON g.student_id    = s.id
+        JOIN users      u ON s.user_id       = u.id
+    </select>
+
+    <!--수업 성적 목록 조회-->
+    <select id="findByCourse" resultMap="GradeMap">
+        SELECT * FROM grade g
+        JOIN enrollment e ON g.enrollment_id = e.id
+        JOIN studnet    s ON g.student_id    = s.id
+        JOIN user       u ON g.user_id       = u.id
+        ORDER BY g.id DESC
+    </select>
+
+    <!-- 성적 입력-->
+    <insert id="insert" parameterType="com.ac.kr.academy.domain.grade.Grade">
+        <selectKey keyProperty="id" resultType="long" order="BEFORE">
+            SELECT grade_seq.NEXTVAL FROM dual
+        </selectKey>
+        INSERT INTO grade (
+        id, alphabet, GPA, score, total_int, student_id, enrollment_id
+        )VALUES (
+        #{id}, #{alpahnet}, #{gpa}, #{score}, #{totalInt}, #{studnetId}, #{enrollmentId}
+        )
+    </insert>
+
+    <!--성적 수정-->
+    <update id="update" parameterType="com.ac.kr.academy.domain.grade.Grade">
+        UPDATE grade
+        SET alphabet      = #{alpahbet},
+            GPA           = #{gpa},
+            score         = #{score},
+            total_int     = #{totalInt},
+            student_id    = #{studnetId},
+            enrollment_id = #{enrollmentId}
+        WHERE id = #{id}
+    </update>
+
+    <!--성적 삭제-->
+    <delete id="delete">
+        DELETE FROM grade WHERE id = #{id}
+    </delete>
+<!--============================학생=================================-->
+    <!--학생 성적 총 건수-->
+    <select id="countMyGrade" resultType="long">
+        SELECT COUNT(*) FROM grade g
+    </select>
+
+    <!--학생 성적 목록-->
+    <select id="findMyGrade" resultMap="GradeMap">
+        SELECT * FROM grade g
+        ORDER BY g.id DESC
+    </select>
+
+    <!--성적 단건 조회-->
+    <select id="findMyGradeById" resultMap="GradeMap">
+        SELECT * FROM grade g
+        WHERE g.id = #{id}
+        AND g.student_id = #{studnetId}
+    </select>
+
+<!--============================공통=================================-->
+    <!--성적 단건 조회-->
+    <select id="findById" resultMap="GradeMap">
+        SELECT * FROM grade g
+        WHERE g.id = #{id}
+    </select>
+
+</mapper>
