@@ -17,10 +17,10 @@ public class GradeController {
 
     /*================================교수================================*/
     // 강의별 성적 목록 페이지
-    @GetMapping("")
-    public String courseGrades (@PathVariable Long courseId, Model model) {
-        model.addAttribute()
-    }
+//    @GetMapping("")
+//    public String courseGrades (@PathVariable Long courseId, Model model) {
+//        model.addAttribute()
+//    }
     /*================================학생================================*/
 
     /*================================공통================================*/

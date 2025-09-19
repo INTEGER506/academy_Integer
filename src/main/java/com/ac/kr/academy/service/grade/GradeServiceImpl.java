@@ -19,7 +19,7 @@ public class GradeServiceImpl implements GradeService {
     // 강의(Course)별 성적 목록
     @Override
     public List<Grade> findByCourseAll(Long professorId, Long courseId) {
-        return
+        return List.of();
     }
 
     //성적 등록
