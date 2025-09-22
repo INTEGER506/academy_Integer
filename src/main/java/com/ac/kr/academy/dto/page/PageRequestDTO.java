@@ -1,11 +1,18 @@
 package com.ac.kr.academy.dto.page;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class PageRequestDTO {
     private int page;               // 현재 페이지
     private int pageSize;           // 페이지 당 보여질 게시물 수
+    private String sort;            // 정렬
     private String searchKeyword;   // 검색 키워드
     private String searchType;      // 검색 조건 (ex: 작성자, 제목, 내용 등)
 

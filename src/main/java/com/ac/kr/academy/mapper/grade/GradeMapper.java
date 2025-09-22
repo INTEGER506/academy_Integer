@@ -5,6 +5,7 @@ import com.ac.kr.academy.domain.grade.Grade;
 import com.ac.kr.academy.domain.grade.GradeSystem;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.springframework.security.core.parameters.P;
 
 import java.util.List;
 
@@ -23,7 +24,7 @@ public interface GradeMapper {
     int insertAlphabetGlobal(AlphabetSystem rule);
 
     // 과목 규정 추가 (subject_id = #{subjectId})
-    int insertAlphabetbySubject(AlphabetSystem rule);
+    int insertAlphabetBySubject(AlphabetSystem rule);
 
     // 규정 수정 (id 기준)
     int updateAlphabetRule(AlphabetSystem rule);
@@ -43,35 +44,50 @@ public interface GradeMapper {
 
     // 특정 수업(course) 성적 총 건수
     long countByCourse(@Param("courseId") Long courseId,
-                       @Param("professorId") Long professorId);
+                       @Param("professorId") Long professorId,
+                       @Param("searchType") String searchType,
+                       @Param("searchKeyword") String keyword);
 
     // 수업 성적 목록 조회
     List<Grade> findByCourse(
             @Param("courseId") Long courseId,
-            @Param("professorId") Long professorId
+            @Param("professorId") Long professorId,
+            @Param("searchKeyword") String searchKeyword,
+            @Param("searchType") String searchType,
+            @Param("sort") String sort
     );
 
     // 성적 등록
-    void insert(Grade grade);
+    void insert(Grade grade, Long professorId);
 
     // 성적 수정
-    void update(Grade grade);
+    void update(Grade grade, Long professorId);
 
     // 성적 삭제
-    void delete(Long id);
+    void delete(@Param("id") Long id, Long professorId);
+
+    // 개설한 수강 = 교수 검사
+    int AccessEnrollment(@Param("enrollment") Long enrollment, @Param("professorId") Long professorId);
+
+    // 본인이 부여한 성적이 맞는지 검사
+    int isOwnerOfGrade(@Param("gradeId") Long gradeId,
+                       @Param("professorId") Long professorId);
 
     /*==================================학생================================*/
     // 학생 성적 총 건수
     long countMyGrade(@Param("studentId") Long studentId,
-                      @Param("subjectId") Long subjectId);
+                      @Param("searchType") String searchType,
+                      @Param("keyword") String searchKeyword);
 
     // 성적 조회
-    List<Grade> findMyGrade(@Param("id") Long id,
-                            @Param("studentId") Long studentId);
+    List<Grade> findMyGrade(@Param("studentId") Long studentId,
+                            @Param("searchType") String searchType,
+                            @Param("searchKeyword") String searchKeyword,
+                            @Param("sort") String sort);
 
     // 성적 단건 조회
-    Grade findMyGradeById(@Param("id") Long id,
-                          @Param("studentId") Long studentId);
+    List<Grade> findMyGradeById(@Param("id") Long id,
+                                @Param("studentId") Long studentId);
 
     /*==================================공통================================*/
     //성적 단건 조회
