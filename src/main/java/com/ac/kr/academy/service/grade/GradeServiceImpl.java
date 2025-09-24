@@ -8,6 +8,7 @@ import com.ac.kr.academy.dto.page.PageRequestDTO;
 import com.ac.kr.academy.dto.page.PageResponseDTO;
 import com.ac.kr.academy.mapper.grade.GradeMapper;
 import lombok.RequiredArgsConstructor;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,14 +26,21 @@ public class GradeServiceImpl implements GradeService {
     /*================================교수================================*/
     // 수업별 성적 목록
     @Override
-    public PageResponseDTO<Grade> listByCourse(Long courseId, PageRequestDTO request, Long professorId) {
-        int page = request.getPage() <= 0 ? 1 : request.getPage();
-        int size = request.getPageSize() <= 0 ? 10 : request.getPageSize();
+    public PageResponseDTO<Grade> listByCourse(Long courseId, String searchType, String searchKeyword,
+                                               String sort, PageRequestDTO pageRequestDTO, Long professorId) {
+        int start = pageRequestDTO.getStart();
+        int pageSize= pageRequestDTO.getPageSize();
+        String keyword = pageRequestDTO.getSearchKeyword();
+        String type = pageRequestDTO.getSearchType();
 
-        long total = gradeMapper.countMyGrade(courseId, professorId);
-        List<Grade> items = gradeMapper.findByCourse(courseId, professorId);
+        List<Grade> list = gradeMapper.findByCourse(@Param("courseId") Long courseId, @Param("professorId") Long professorId, @Param("searchKeyword") String keyword);
 
-        return new PageResponseDTO<>(items, (int) total, page, size);
+        return new PageResponseDTO<>
+    }
+
+    @Override
+    public PageResponseDTO<Grade> listMyGrades(Long studentId, String searchType, String searchKeyword, String sort, PageRequestDTO pageRequestDTO) {
+        return null;
     }
 
     // 성적 등록

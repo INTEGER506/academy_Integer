@@ -10,8 +10,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class PageRequestDTO {
+
+    /*================= 페이징 =================*/
     private int page;               // 현재 페이지
     private int pageSize;           // 페이지 당 보여질 게시물 수
+
+    /*================= 검색 ==================*/
     private String sort;            // 정렬
     private String searchKeyword;   // 검색 키워드
     private String searchType;      // 검색 조건 (ex: 작성자, 제목, 내용 등)
@@ -22,14 +26,17 @@ public class PageRequestDTO {
         return page <= 0 ? 1 : page;
     }
 
+    //
+    public int getPageSize() { return pageSize <= 0 ? 10 : pageSize; }
+
     // 페이지 시작 번호
-    public int getStartRow() {
-        return (page - 1) * pageSize + 1;
+    public int getStart() {
+        return (getPage() - 1) * getPageSize() + 1;
     }
 
     // 페이지 마지막 번호
-    public int getEndRow() {
-        return (page - 1) * pageSize - 1;
+    public int getEnd() {
+        return getStart() + getStart() - 1;
     }
 
     //각 기능들(알림,공지사항 등)에 넣어서 원하는 게시물 수 지정 [Controller에 넣을것]
