@@ -12,31 +12,38 @@ import lombok.NoArgsConstructor;
 public class PageRequestDTO {
 
     /*================= 페이징 =================*/
-    private int page;               // 현재 페이지
-    private int pageSize;           // 페이지 당 보여질 게시물 수
+    //컨트롤러에서 값변경 세팅 권장
+    private int page = 1;                // 현재 페이지
+    private int pageSize = 10;           // 페이지 당 보여질 게시물 수
 
     /*================= 검색 ==================*/
     private String sort;            // 정렬
     private String searchKeyword;   // 검색 키워드
     private String searchType;      // 검색 조건 (ex: 작성자, 제목, 내용 등)
 
-
+    // 검색 키워드 존재 여부 / null이나 공백이면 false
+    public boolean hasKeyword(){
+        return searchKeyword != null && !searchKeyword.trim().isEmpty();
+    }
+zzzzzz
     // 페이징 숫자 0이하 불가능하게 검사
     public int getPage() {
         return page <= 0 ? 1 : page;
     }
 
     //
-    public int getPageSize() { return pageSize <= 0 ? 10 : pageSize; }
+    public int getPageSize() {
+        return pageSize <= 0 ? 10 : pageSize;
+    }
 
     // 페이지 시작 번호
     public int getStart() {
-        return (getPage() - 1) * getPageSize() + 1;
+        return (getPage() - 1) * getPageSize();
     }
 
     // 페이지 마지막 번호
     public int getEnd() {
-        return getStart() + getStart() - 1;
+        return getStart() + getStart();
     }
 
     //각 기능들(알림,공지사항 등)에 넣어서 원하는 게시물 수 지정 [Controller에 넣을것]

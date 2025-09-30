@@ -15,10 +15,18 @@ public interface GradeMapper {
 
     /*==================================관리자================================*/
     // 전체 점수 규정 조회 (subject_id IS NULL)
-    List<AlphabetSystem> findAlphabetGlobal();
+    List<AlphabetSystem> findAlphabetGlobal(@Param("start") int start,
+                                            @Param("end") int end);
 
     // 특정 과목 규정 조회 (subject_id = ?)
-    List<AlphabetSystem> findAlphabetBySubject(@Param("subjectId") Long subjectId);
+    List<AlphabetSystem> findAlphabetBySubject(@Param("subjectId") Long subjectId,
+                                               @Param("enrollmentId") Long enrollmentId,
+                                               @Param("start") int start,
+                                               @Param("end") int end);
+
+    // 과목/ 수강별 등급 규정 총 건수
+    long countAlphabetSubject(@Param("subjectId") Long subjectId,
+                              @Param("enrollmentId") Long enrollmentId);
 
     // 글로벌 규정 추가 (subject_id = Null)
     int insertAlphabetGlobal(AlphabetSystem rule);
@@ -45,6 +53,7 @@ public interface GradeMapper {
     // 특정 수업(course) 성적 총 건수
     long countByCourse(@Param("courseId") Long courseId,
                        @Param("professorId") Long professorId,
+                       @Param("subjectId") Long subjectId,
                        @Param("searchType") String searchType,
                        @Param("searchKeyword") String keyword);
 
@@ -52,9 +61,11 @@ public interface GradeMapper {
     List<Grade> findByCourse(
             @Param("courseId") Long courseId,
             @Param("professorId") Long professorId,
+            @Param("subjectId") Long subjectId,
             @Param("searchKeyword") String searchKeyword,
             @Param("searchType") String searchType,
-            @Param("sort") String sort
+            @Param("start") int start,
+            @Param("end") int end
     );
 
     // 성적 등록
@@ -83,7 +94,8 @@ public interface GradeMapper {
     List<Grade> findMyGrade(@Param("studentId") Long studentId,
                             @Param("searchType") String searchType,
                             @Param("searchKeyword") String searchKeyword,
-                            @Param("sort") String sort);
+                            @Param("start") int start,
+                            @Param("end") int end);
 
     // 성적 단건 조회
     List<Grade> findMyGradeById(@Param("id") Long id,

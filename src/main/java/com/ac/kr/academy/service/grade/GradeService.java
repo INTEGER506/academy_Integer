@@ -14,7 +14,10 @@ public interface GradeService {
 
     /*================================관리자================================*/
     // 글로벌 규정 조회
-    List<AlphabetSystem> getAlphabetGlobal();
+    PageResponseDTO<AlphabetSystem> listAlphabetGlobal(PageRequestDTO pageRequestDTO);
+
+    // 글로벌 규정 등록
+    void addAlphabetGlobal(AlphabetSystem rule);
 
     // 특정 과목 규정 조회
     List<AlphabetSystem> getAlphabetBySubject(@Param("id") Long subjectId);
