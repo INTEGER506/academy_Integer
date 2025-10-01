@@ -18,6 +18,9 @@ public interface GradeMapper {
     List<AlphabetSystem> findAlphabetGlobal(@Param("start") int start,
                                             @Param("end") int end);
 
+    // 전체 건수 조회
+    long countAlphabetGlobal();
+
     // 특정 과목 규정 조회 (subject_id = ?)
     List<AlphabetSystem> findAlphabetBySubject(@Param("subjectId") Long subjectId,
                                                @Param("enrollmentId") Long enrollmentId,
@@ -42,13 +45,15 @@ public interface GradeMapper {
 
     /*==================================교수================================*/
     // 수업별 점수분배 비율 조회 (없으면 서비스에서 디폴트값으로 적용)
-    GradeSystem findGradeSystemByCourse(@Param("courseId") Long courseId);
+    List<GradeSystem> findGradeSystemByCourse(@Param("courseId") Long courseId,
+                                        @Param("start") int start,
+                                        @Param("end") int end);
 
     // 점수 분배 비율 작성
-    int insertGradeSystem(GradeSystem GradeSystem);
+    int insertGradeSystem(GradeSystem system);
 
     // 점수 분배 비율 수정
-    int updateGradeSystem(GradeSystem GradeSystem);
+    int updateGradeSystem(GradeSystem system);
 
     // 특정 수업(course) 성적 총 건수
     long countByCourse(@Param("courseId") Long courseId,

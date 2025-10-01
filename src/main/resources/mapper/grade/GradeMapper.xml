@@ -51,6 +51,13 @@
         WHERE rn &gt; #{start}
     </select>
 
+    <!---->
+    <select id="countAlphabetGlobal" resultType="long">
+        SELECT COUNT(*)
+        FROM alphabet_system
+        WHERE subject_id IS NULL
+    </select>
+
     <!-- 글로벌 규정 추가 (subject_id = Null 이면 전체 적용) -->
     <insert id="insertAlphabetGlobal" parameterType="com.ac.kr.academy.domain.grade.AlphabetSystem">
         <selectKey keyProperty="id" resultType="long" order="BEFORE">

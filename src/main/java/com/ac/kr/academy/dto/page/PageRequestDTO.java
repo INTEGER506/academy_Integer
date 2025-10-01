@@ -22,10 +22,7 @@ public class PageRequestDTO {
     private String searchType;      // 검색 조건 (ex: 작성자, 제목, 내용 등)
 
     // 검색 키워드 존재 여부 / null이나 공백이면 false
-    public boolean hasKeyword(){
-        return searchKeyword != null && !searchKeyword.trim().isEmpty();
-    }
-zzzzzz
+
     // 페이징 숫자 0이하 불가능하게 검사
     public int getPage() {
         return page <= 0 ? 1 : page;
