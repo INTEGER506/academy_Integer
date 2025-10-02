@@ -23,14 +23,13 @@
     <!--전체 점수 규정 조회-->
     <select id="findAlphabetGlobal" resultType="com.ac.kr.academy.domain.grade.AlphabetSystem">
         SELECT *
-        FROM (SELECT t.*, ROWNUM rn) FROM (
-        SELECT * FROM alphabet_system
-        WHERE subject_id IS null
-        ORDER BY id DESC
-        )t
-        WHERE ROWNUM
-         &lt; = #{end}
-            )
+        FROM (SELECT t.*, ROWNUM rn
+              FROM (SELECT *
+                    FROM alphabet_system
+                    WHERE subject_id IS null
+                    ORDER BY id DESC) t
+              WHERE ROWNUM &lt; = #{end}
+              )
         WHERE rn &gt; #{start}
     </select>
 
@@ -199,9 +198,9 @@
         mid_exam, final_exam, assignment, attendance
         student_id, enrollment_id
         )VALUES (
-        #{id}, #{alpahnet}, #{gpa}, #{score}, #{totalInt},
-        #{midExam}, #{fianlExam}, #{assignment}, #{attendance},
-        #{studnetId}, #{enrollmentId}
+        #{id}, #{alphabet}, #{gpa}, #{score}, #{totalInt},
+        #{midExam}, #{finalExam}, #{assignment}, #{attendance},
+        #{studentId}, #{enrollmentId}
         )
     </insert>
 
