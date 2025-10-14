@@ -48,8 +48,7 @@
 </table>
 
 <div style="margin-top: 12px;">
-    <%--목록으로--%>
-    <a href="${pageContext.request.contextPath}/grade/student/list?studentId=${param.studentId}">목록</a>
+        <a href="${pageContext.request.contextPath}/grade/student/${studentId}/list">목록</a>
 </div>
 
 </body>

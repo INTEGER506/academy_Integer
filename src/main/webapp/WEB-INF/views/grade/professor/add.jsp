@@ -54,7 +54,7 @@
 
     <div style="margin-top: 12px;">
         <button type="submit">등록</button>
-        <a href="${pageContext.request.contextPath}/grade/professor/list?professorId=${param.professorId}">목록</a>
+        <a href="${pageContext.request.contextPath}/grade/professor/${param.professorId}/list">목록</a>
     </div>
 </form>
 

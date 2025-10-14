@@ -317,27 +317,31 @@
 
     <!--성적 단건 조회-->
     <select id="findMyGradeById" resultMap="GradeMap">
-        SELECT *
-        FROM grade
-        WHERE id = #{id}
-          AND student_id = #{studentId}
+        SELECT
+            g.id, g.alphabet, g.gpa, g.score, g.total_int,
+            g.mid_exam, g.final_exam, g.assignment, g.attendance,
+            g.student_id, g.enrollment_id,
+            sj.name AS subjectName
+        FROM grade g
+                 JOIN enrollment e ON g.enrollment_id = e.id
+                 JOIN course c     ON e.course_id     = c.id
+                 LEFT JOIN subject sj ON c.subject_id = sj.id
+        WHERE g.id = #{id}
+          AND g.student_id = #{studentId}
     </select>
 
     <!--============================공통=================================-->
     <!--성적 단건 조회-->
     <select id="findById" resultMap="GradeMap">
-        SELECT g.id,
-               g.alphabet,
-               g.gpa,
-               g.score,
-               g.total_int,
-               g.mid_exam,
-               g.final_exam,
-               g.assignment,
-               g.attendance,
-               g.student_id,
-               g.enrollment_id
+        SELECT
+            g.id, g.alphabet, g.gpa, g.score, g.total_int,
+            g.mid_exam, g.final_exam, g.assignment, g.attendance,
+            g.student_id, g.enrollment_id,
+            sj.name AS subjectName
         FROM grade g
+                 JOIN enrollment e ON g.enrollment_id = e.id
+                 JOIN course c     ON e.course_id     = c.id
+                 LEFT JOIN subject sj ON c.subject_id = sj.id
         WHERE g.id = #{id}
     </select>
 

@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Data
@@ -51,6 +52,31 @@ public class PageResponseDTO<T> {
         this.hasPrevious = (startPage > 1);
         this.hasNext = (endPage < totalPage);
 
+    }
+
+    /* ===================== 공통 페이징 기능 ===================== */
+    /**
+     * 공통 페이징 DTO
+     * - pageOf() : ServiceImpl에서 한 줄로 페이징 객체 만들기용
+     * - 예시: return PageResponseDTO.pageOf(list, total, req);
+     */
+
+    public static <T> PageResponseDTO<T> pageOf(List<T> list, long total, PageRequestDTO req) {
+        PageResponseDTO<T> resp = new PageResponseDTO<>();
+
+        // null 방지
+        resp.setData(list == null ? Collections.emptyList() : list);
+
+        // 기본 세팅
+        resp.setTotalCount((int) total);
+        resp.setCurrentPage(req.getPage());
+        resp.setPageSize(req.getPageSize());
+        resp.setBlockSize(req.getBlockSize());
+
+        // 블록 계산
+        resp.calculate();
+
+        return resp;
     }
 
     public void setData(List<T> list) {

@@ -22,18 +22,6 @@ public class GradeServiceImpl implements GradeService {
     private final GradeMapper gradeMapper;
 
 
-    /* ===================== 공통 페이징 기능 ===================== */
-    private <T> PageResponseDTO<T> pageOf(List<T> list, long total, PageRequestDTO req) {
-        PageResponseDTO<T> resp = new PageResponseDTO<>();
-        resp.setData(list == null ? Collections.emptyList() : list);
-        resp.setTotalCount((int) total);
-        resp.setCurrentPage(req.getPage());
-        resp.setPageSize(req.getPageSize());
-        resp.setBlockSize(req.getBlockSize());
-        resp.calculate();
-        return resp;
-    }
-
     /*================================관리자================================*/
 
     // 전체 규정 목록
@@ -45,7 +33,7 @@ public class GradeServiceImpl implements GradeService {
         List<AlphabetSystem> rows = (total == 0)
                 ? Collections.emptyList()
                 : gradeMapper.findAlphabetGlobal(req.getStart(), req.getEnd());
-        return pageOf(rows, total, req);
+        return PageResponseDTO.pageOf(rows, total, req);
     }
 
     // 규정 추가
@@ -80,10 +68,12 @@ public class GradeServiceImpl implements GradeService {
         List<AlphabetSystem> rows = (total == 0)
                 ? Collections.emptyList()
                 : gradeMapper.findAlphabetBySubject(
-                subjectId, enrollmentId,
-                req.getStart(), req.getEnd()
-        );
-        return pageOf(rows, total, req);
+                                                    subjectId,
+                                                    enrollmentId,
+                                                    req.getStart(),
+                                                    req.getEnd()
+                                                    );
+        return PageResponseDTO.pageOf(rows, total, req);
     }
 
     /*================================교수================================*/
@@ -107,7 +97,7 @@ public class GradeServiceImpl implements GradeService {
                 req.getStart(), req.getEnd(), req.getPageSize()
         );
 
-        return pageOf(list, total, req);
+        return PageResponseDTO.pageOf(list, total, req);
     }
 
     // 성적 등록
@@ -145,7 +135,7 @@ public class GradeServiceImpl implements GradeService {
                 courseId, req.getStart(), req.getEnd()
         );
 
-        return pageOf(list, total, req);
+        return PageResponseDTO.pageOf(list, total, req);
     }
 
     // 점수 분배 등록
@@ -178,7 +168,7 @@ public class GradeServiceImpl implements GradeService {
                 studentId, searchType, searchKeyword, req.getStart(),  req.getEnd()
         );
 
-        return pageOf(list, total, req);
+        return PageResponseDTO.pageOf(list, total, req);
     }
 
     // 성적 단건 조회

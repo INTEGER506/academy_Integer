@@ -43,7 +43,7 @@
                 <%-- 수정 --%>
                 <a href="${pageContext.request.contextPath}/grade/professor/edit?id=${g.id}&professorId=${g.professorId}">수정</a>
                 <%-- 삭제 폼 --%>
-                <form method="post" action="${pageContext.request.contextPath}/grade/professor/delete" style="display: :inline;">
+                <form method="post" action="${pageContext.request.contextPath}/grade/professor/delete" style="display:inline;">
                     <input type="hidden" name="id" value="${g.id}"/>
                     <input type="hidden" name="professorId" value="${param.professorId}" />
                     <button type="submit" onclick="return confirm('삭제하시겠습니까?')">삭제</button>

@@ -42,7 +42,7 @@
             <td>${g.alphabet}</td>
             <td>${g.score}</td>
             <td>
-                <a href="${pageContext.request.contextPath}/grade/student/${studentId}/detail/${row.id}">보기</a>
+                <a href="${pageContext.request.contextPath}/grade/student/${studentId}/detail/${g.id}">보기</a>
             </td>
         </tr>
     </c:forEach>

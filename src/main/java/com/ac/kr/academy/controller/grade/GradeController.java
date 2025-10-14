@@ -41,7 +41,7 @@ public class GradeController {
         // 유지할 파라미터가 없으면 빈 Map
         model.addAttribute("keepParams", new HashMap<String, Object>());
 
-        return "/grade/listAlphabetGlobal";
+        return "grade/admin/alphabet-list";
     }
 
     // 특정 과목 규정 목록
@@ -66,7 +66,7 @@ public class GradeController {
         if (enrollmentId != null) keep.put("enrollmentId", enrollmentId);
         model.addAttribute("keepParams", keep);
 
-        return "/grade/admin/rule-subject";
+        return "grade/admin/alphabet-list";
     }
 
     // 전체 규정 동록
@@ -95,7 +95,7 @@ public class GradeController {
 
     /*================================교수 : 성적 목록/CRUD================================*/
     // 성적 목록 (교수)
-    @GetMapping("/professor/list")
+    @GetMapping("/professor/{professorId}/list")
     public String ListForProfessor(@RequestParam Long professorId,
                                    @RequestParam(required = false) Long courseId,
                                    @RequestParam(required = false) Long subjectId,
@@ -149,7 +149,7 @@ public class GradeController {
                       @ModelAttribute Grade grade) {
         grade.setEnrollmentId(grade.getEnrollmentId());
         gradeService.addGrade(grade, professorId);
-        return "redirect:/grade/professor/list?professorId=" + professorId;
+        return "redirect:/grade/professor" + professorId + "/list";
     }
 
     // 성적 수정 폼
@@ -167,7 +167,7 @@ public class GradeController {
     public String edit(@RequestParam Long professorId,
                        @ModelAttribute Grade grade) {
         gradeService.editGrade(grade, professorId);
-        return "redirect:/grade/professor/list?professorId=" + professorId;
+        return "redirect:/grade/professor" + professorId + "/list";
     }
 
     // 성적 삭제
@@ -175,7 +175,7 @@ public class GradeController {
     public String delete(@RequestParam Long id,
                          @RequestParam Long professorId) {
         gradeService.deleteGrade(id, professorId);
-        return "redirect:/grade/professor/list?professorId=" + professorId;
+        return "redirect:/grade/professor/" + professorId + "/list";
     }
 
     /*================================교수 : 점수분배 목록/ 등록/ 수정================================*/
