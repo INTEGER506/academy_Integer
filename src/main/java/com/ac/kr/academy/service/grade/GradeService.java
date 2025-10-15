@@ -10,18 +10,18 @@ import org.apache.ibatis.annotations.Param;
 
 
 import java.util.List;
+import java.util.Map;
 
 public interface GradeService {
 
     /*================================관리자================================*/
     // 글로벌 규정 조회
-    PageResponseDTO<AlphabetSystem> listAlphabetGlobal(
-            @Param("searchType") String searchType,
-            @Param("searchKeyword") String searchKeyword,
-            PageRequestDTO req);
+    PageResponseDTO<AlphabetSystem> listAlphabetGlobal(@Param("searchType") String searchType,
+                                                       @Param("searchKeyword") String searchKeyword,
+                                                       @Param("req") PageRequestDTO req);
 
     // 글로벌 규정 등록
-    void addAlphabetGlobal(AlphabetSystem rule);
+    void addAlphabetGlobal(AlphabetSystem as);
 
     // 특정 과목 규정 조회
     PageResponseDTO<AlphabetSystem> listAlphabetBySubject(Long subjectId,
@@ -31,10 +31,10 @@ public interface GradeService {
                                                           PageRequestDTO req);
 
     // 규정 추가
-    void addAlphabetRule(AlphabetSystem rule, boolean global);
+    void addAlphabetRule(AlphabetSystem as);
 
     // 규정 수정
-    void updateAlphabetRule(AlphabetSystem rule);
+    void updateAlphabetRule(AlphabetSystem as);
 
     // 규정 삭제
     void deleteAlphabetRule(@Param("id") Long id);
@@ -45,6 +45,12 @@ public interface GradeService {
                                                          @Param("searchType") String searchType,
                                                          @Param("searchKeyword") String searchKeyword,
                                                          PageRequestDTO req);
+
+    // 점수분배 등록
+    void addGradeSystem(GradeSystem gs);
+
+    // 점수분배 수정
+    void editGradeSystem(GradeSystem gs);
 
     // 성적 목록 조회 (검색 / 페이징)
     PageResponseDTO<Grade> listByCourse(@Param("professorId") Long professorId,
@@ -63,11 +69,10 @@ public interface GradeService {
     // 성적 삭제
     void deleteGrade(Long gradeId, Long professorId);
 
-    // 점수분배 등록
-    void addGradeSystem(GradeSystem system, Long professorId);
+    GradeSystem getGradeSystemByCourse(Long courseId);
 
-    // 점수분배 수정
-    void editGradeSystem(GradeSystem system, Long professorId);
+    Map<String, Object> calculateGradePreview(Grade grade);
+
 
     /*================================학생================================*/
     // 학생 성적 목록 조회 (페이징 / 검색)

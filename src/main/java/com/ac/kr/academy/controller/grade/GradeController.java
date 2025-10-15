@@ -44,6 +44,46 @@ public class GradeController {
         return "grade/admin/alphabet-list";
     }
 
+    // 추가 폼 (GET)
+    @GetMapping("/admin/alphabet/add")
+    public String adminAlphabetAddForm(Model model) {
+        model.addAttribute("as", new AlphabetSystem());
+        model.addAttribute("action", "/grade/admin/alphabet/add");
+        return "grade/admin/alphabet-form";
+    }
+
+    // 추가 처리 (POST)
+    @PostMapping("/admin/alphabet/add")
+    public String adminAlphabetAdd(@ModelAttribute AlphabetSystem as) {
+        gradeService.addAlphabetGlobal(as);
+        return "redirect:/grade/admin/rule/global";
+    }
+
+    // 수정 폼 (GET) — 필요시 단건조회 붙이면 됨
+    @GetMapping("/admin/alphabet/edit")
+    public String adminAlphabetEditForm(@RequestParam Long id, Model model) {
+        AlphabetSystem as = new AlphabetSystem();
+        as.setId(id);
+        model.addAttribute("as", as);
+        model.addAttribute("action", "/grade/admin/alphabet/edit");
+        return "grade/admin/alphabet-form";
+    }
+
+    // 수정 처리 (POST)
+    @PostMapping("/admin/alphabet/edit")
+    public String adminAlphabetEdit(@ModelAttribute AlphabetSystem as) {
+        gradeService.updateAlphabetRule(as);
+        return "redirect:/grade/admin/rule/global";
+    }
+
+    // 삭제 (POST)
+    @PostMapping("/admin/alphabet/delete")
+    public String adminAlphabetDelete(@RequestParam Long id) {
+        gradeService.deleteAlphabetRule(id);
+        return "redirect:/grade/admin/rule/global";
+    }
+
+
     // 특정 과목 규정 목록
     @GetMapping("/admin/rule/subject")
     public String listAlphabetSubject(@RequestParam(required = false) Long subjectId,
@@ -53,7 +93,7 @@ public class GradeController {
                                       @RequestParam(required = false) String searchKeyword,
                                       Model model) {
 
-        var result = gradeService.listAlphabetBySubject(
+        PageResponseDTO<AlphabetSystem> result = gradeService.listAlphabetBySubject(
                 subjectId, enrollmentId, searchType, searchKeyword, req   // ★ 누락된 2개 추가
         );
 
@@ -69,33 +109,69 @@ public class GradeController {
         return "grade/admin/alphabet-list";
     }
 
-    // 전체 규정 동록
-    @PostMapping("/admin/rule/global/add")
-    public String addAlphabetGlobal(@ModelAttribute AlphabetSystem rule) {
-        // 전체: subject / enrollment Null
-        rule.setSubjectId(null);
-        rule.setEnrollmentId(null);
-        gradeService.addAlphabetGlobal(rule);
-        return "redirect:/grade/admin/rule/global";
+    // 추가 폼
+    @GetMapping("/admin/rule/subject/add")
+    public String adminRuleSubjectAddForm(@RequestParam(required = false) Long subjectId,
+                                          @RequestParam(required = false) Long enrollmentId,
+                                          Model model) {
+        AlphabetSystem as = new AlphabetSystem();
+        as.setSubjectId(subjectId);
+        as.setEnrollmentId(enrollmentId);
+        model.addAttribute("as", as);
+        model.addAttribute("action", "/grade/admin/rule/subject/add");
+        return "grade/admin/alphabet-form";
     }
 
-    // 규정 수정
-    @PostMapping("/admin/rule/edit")
-    public String editAlphabetRule(@ModelAttribute AlphabetSystem rule) {
-        gradeService.updateAlphabetRule(rule);
-        return "redirect:/grade/admin/rule/global";
+    // 추가 처리
+    @PostMapping("/admin/rule/subject/add")
+    public String adminRuleSubjectAdd(@ModelAttribute AlphabetSystem as) {
+        gradeService.addAlphabetRule(as);
+        String redirect = "/grade/admin/rule/subject";
+        redirect += (as.getSubjectId() != null ? "?subjectId=" + as.getSubjectId() : "");
+        redirect += (as.getEnrollmentId() != null ? (redirect.contains("?") ? "&" : "?") + "enrollmentId=" + as.getEnrollmentId() : "");
+        return "redirect:" + redirect;
     }
 
-    // 규정 삭제
-    @PostMapping("/admin/rule/delete")
-    public String deleteAlphabetRule(@RequestParam Long id) {
+    // 수정 폼
+    @GetMapping("/admin/rule/subject/edit")
+    public String adminRuleSubjectEditForm(@RequestParam Long id,
+                                           @RequestParam(required = false) Long subjectId,
+                                           @RequestParam(required = false) Long enrollmentId,
+                                           Model model) {
+        AlphabetSystem as = new AlphabetSystem();
+        as.setId(id);
+        as.setSubjectId(subjectId);
+        as.setEnrollmentId(enrollmentId);
+        model.addAttribute("as", as);
+        model.addAttribute("action", "/grade/admin/rule/subject/edit");
+        return "grade/admin/alphabet-form";
+    }
+
+    // 수정 처리
+    @PostMapping("/admin/rule/subject/edit")
+    public String adminRuleSubjectEdit(@ModelAttribute AlphabetSystem as) {
+        gradeService.updateAlphabetRule(as);
+        String redirect = "/grade/admin/rule/subject";
+        redirect += (as.getSubjectId() != null ? "?subjectId=" + as.getSubjectId() : "");
+        redirect += (as.getEnrollmentId() != null ? (redirect.contains("?") ? "&" : "?") + "enrollmentId=" + as.getEnrollmentId() : "");
+        return "redirect:" + redirect;
+    }
+
+    // 삭제
+    @PostMapping("/admin/rule/subject/delete")
+    public String adminRuleSubjectDelete(@RequestParam Long id,
+                                         @RequestParam(required = false) Long subjectId,
+                                         @RequestParam(required = false) Long enrollmentId) {
         gradeService.deleteAlphabetRule(id);
-        return "redirect:/grade/admin/rule/global";
+        String redirect = "/grade/admin/rule/subject";
+        redirect += (subjectId != null ? "?subjectId=" + subjectId : "");
+        redirect += (enrollmentId != null ? (redirect.contains("?") ? "&" : "?") + "enrollmentId=" + enrollmentId : "");
+        return "redirect:" + redirect;
     }
 
     /*================================교수 : 성적 목록/CRUD================================*/
     // 성적 목록 (교수)
-    @GetMapping("/professor/{professorId}/list")
+    @GetMapping("/professor/list")
     public String ListForProfessor(@RequestParam Long professorId,
                                    @RequestParam(required = false) Long courseId,
                                    @RequestParam(required = false) Long subjectId,
@@ -107,25 +183,13 @@ public class GradeController {
 
         // 서비스 호출 -> 페이지 결과 수신
         PageResponseDTO<Grade> result =
-                gradeService.listByCourse(
-                        professorId,                 // 교수
-                        courseId,                    // 수업(선택)
-                        subjectId,                   // 과목(선택)
-                        req.getSearchType(),         // 검색 타입
-                        req.getSearchKeyword(),      // 검색 키워드
-                        req                          // 페이지/사이즈(start/end 포함)
-                );
+                gradeService.listByCourse(professorId, courseId, subjectId, searchType, searchKeyword, req);
 
         model.addAttribute("result", result);
         model.addAttribute("req", req);
-
-        // JSP에서 hidden으로 쓰게 모델 값 내려줌
         model.addAttribute("professorId", professorId);
-        if (courseId != null) model.addAttribute("courseId", courseId);
-        if (subjectId != null) model.addAttribute("subjectId", subjectId);
 
         Map<String, Object> keep = new HashMap<>();
-        keep.put("professorId", professorId);
         if (courseId != null) keep.put("courseId", courseId);
         if (subjectId != null) keep.put("subjectId", subjectId);
         model.addAttribute("keepParams", keep);
@@ -133,54 +197,74 @@ public class GradeController {
         return "grade/professor/list";
     }
 
-    // 성적 등록 폼
+    // 등록 폼
     @GetMapping("/professor/add")
-    public String addForm(@RequestParam Long professorId,
-                          @RequestParam Long enrollmentId,
-                          Model model) {
-        model.addAttribute("professorId", professorId);
-        model.addAttribute("enrollmentId", enrollmentId);
+    public String professorGradeAddForm(@RequestParam Long courseId,
+                                        @RequestParam Long subjectId,
+                                        @RequestParam Long enrollmentId,
+                                        Model model) {
+        Grade g = new Grade();
+        g.setEnrollmentId(enrollmentId);
+
+        model.addAttribute("g", g);
+        model.addAttribute("courseId", courseId);
+        model.addAttribute("subjectId", subjectId);
+
         return "grade/professor/add";
+
     }
 
-    // 성적 등록 처리
+    // 등록 처리
     @PostMapping("/professor/add")
-    public String add(@RequestParam Long professorId,
-                      @ModelAttribute Grade grade) {
-        grade.setEnrollmentId(grade.getEnrollmentId());
+    public String professorGradeAdd(@ModelAttribute Grade grade,
+                                    @RequestParam(required = false) Long professorId,
+                                    @RequestParam Long courseId,
+                                    @RequestParam Long subjectId) {
         gradeService.addGrade(grade, professorId);
-        return "redirect:/grade/professor" + professorId + "/list";
+
+        return "redirect:/grade/professor/list?professorId=" + professorId
+                + "&courseId=" + courseId + "&subjectId=" + subjectId;
     }
 
-    // 성적 수정 폼
+    // 수정 폼
     @GetMapping("/professor/edit")
-    public String editForm(@RequestParam Long id,
-                           @RequestParam Long professorId,
-                           Model model) {
-        model.addAttribute("professorId", professorId);
-        model.addAttribute("grade", gradeService.findGrade(id));
+    public String professorGradeEditForm(@RequestParam Long id,
+                                         @RequestParam Long courseId,
+                                         @RequestParam Long subjectId,
+                                         Model model) {
+        // 단건조회 메서드가 따로 없으면 getMyGrade로 대체(학생ID null 허용)
+        Grade g = gradeService.getMyGrade(null, id);
+        model.addAttribute("g", g);
+        model.addAttribute("courseId", courseId);
+        model.addAttribute("subjectId", subjectId);
         return "grade/professor/edit";
     }
 
-    // 성적 수정
+    // 수정 처리
     @PostMapping("/professor/edit")
-    public String edit(@RequestParam Long professorId,
-                       @ModelAttribute Grade grade) {
+    public String professorGradeEdit(@ModelAttribute Grade grade,
+                                     @RequestParam(required = false) Long professorId,
+                                     @RequestParam Long courseId,
+                                     @RequestParam Long subjectId) {
         gradeService.editGrade(grade, professorId);
-        return "redirect:/grade/professor" + professorId + "/list";
+        return "redirect:/grade/professor/list?professorId=" + professorId
+                + "&courseId=" + courseId + "&subjectId=" + subjectId;
     }
 
-    // 성적 삭제
+    // 삭제
     @PostMapping("/professor/delete")
-    public String delete(@RequestParam Long id,
-                         @RequestParam Long professorId) {
+    public String professorGradeDelete(@RequestParam Long id,
+                                       @RequestParam(required = false) Long professorId,
+                                       @RequestParam Long courseId,
+                                       @RequestParam Long subjectId) {
         gradeService.deleteGrade(id, professorId);
-        return "redirect:/grade/professor/" + professorId + "/list";
+        return "redirect:/grade/professor/list?professorId=" + professorId
+                + "&courseId=" + courseId + "&subjectId=" + subjectId;
     }
 
     /*================================교수 : 점수분배 목록/ 등록/ 수정================================*/
     // 점수 분배 목록
-    @GetMapping("/professor/system/list")
+    @GetMapping("/professor/system-list")
     public String listGradeSystem(@RequestParam Long courseId,
                                   @ModelAttribute PageRequestDTO req,
                                   @RequestParam(required = false) String searchType,
@@ -198,27 +282,27 @@ public class GradeController {
         keep.put("courseId", courseId);
         model.addAttribute("keepParams", keep);
 
-        return "grade/professor/system/list";
+        return "grade/professor/system-list";
     }
 
-    // 점수분배 등록 처리
-    @PostMapping("/professor/system/add")
-    public String addGradeSystem(@RequestParam Long courseId,
-                                 @RequestParam Long professorId,
-                                 @ModelAttribute GradeSystem system) {
-        system.setCourseId(courseId);
-        gradeService.addGradeSystem(system, professorId);
-        return "redirect:/grade/professor/system/list?courseId=" + courseId;
+    // 비율 수정 폼 (필요 시)
+    @GetMapping("/professor/system/edit")
+    public String professorSystemEditForm(@RequestParam Long courseId,
+                                          @RequestParam(required = false) Long id,
+                                          Model model) {
+        GradeSystem gs = new GradeSystem();
+        gs.setId(id);
+        gs.setCourseId(courseId);
+        model.addAttribute("gs", gs);
+        return "grade/professor/system-edit"; // 필요 시 생성(또는 modal로 처리)
     }
 
-    // 점수분배 수정 처리
+    // 비율 저장 (추가/수정 통합)
     @PostMapping("/professor/system/edit")
-    public String editGradeSystem(@RequestParam Long courseId,
-                                  @RequestParam Long professorId,
-                                  @ModelAttribute GradeSystem system) {
-        system.setCourseId(courseId);
-        gradeService.editGradeSystem(system, professorId);
-        return "redirect:/grade/professor/system/list?courseId=" + courseId;
+    public String professorSystemEdit(@ModelAttribute GradeSystem gs) {
+        if (gs.getId() == null) gradeService.addGradeSystem(gs);
+        else gradeService.editGradeSystem(gs);
+        return "redirect:/grade/professor/system-list?courseId=" + gs.getCourseId();
     }
 
     /*================================학생================================*/

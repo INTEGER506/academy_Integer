@@ -16,10 +16,16 @@ public interface GradeMapper {
     /*==================================관리자================================*/
     // 전체 점수 규정 조회 (subject_id IS NULL)
     List<AlphabetSystem> findAlphabetGlobal(@Param("start") int start,
-                                            @Param("end") int end);
+                                            @Param("end") int end,
+                                            @Param("searchType") String searchType,
+                                            @Param("searchKeyword") String searchKeyword
+                                            );
 
     // 전체 건수 조회
-    long countAlphabetGlobal();
+    long countAlphabetGlobal(
+            @Param("searchType") String searchType,
+            @Param("searchKeyword") String searchKeyword
+    );
 
     // 특정 과목 규정 조회 (subject_id = ?)
     List<AlphabetSystem> findAlphabetBySubject(@Param("subjectId") Long subjectId,
@@ -30,6 +36,18 @@ public interface GradeMapper {
     // 과목/ 수강별 등급 규정 총 건수
     long countAlphabetSubject(@Param("subjectId") Long subjectId,
                               @Param("enrollmentId") Long enrollmentId);
+
+    // 과목/수강 전용 규정 전체 (경계값 내림차순) — 계산용
+    List<AlphabetSystem> listAlphabetBySubjectAll(
+            @Param("subjectId") Long subjectId,
+            @Param("enrollmentId") Long enrollmentId
+    );
+
+    // 글로벌 규정 전체 (경계값 내림차순) — 계산용
+    List<AlphabetSystem> listAlphabetGlobalAll();
+
+    // (선택) 수강ID로 코스ID 조회가 필요하면
+    Long findCourseIdByEnrollment(@Param("enrollmentId") Long enrollmentId);
 
     // 글로벌 규정 추가 (subject_id = Null)
     int insertAlphabetGlobal(AlphabetSystem rule);
@@ -46,11 +64,11 @@ public interface GradeMapper {
     /*==================================교수================================*/
     // 수업별 점수분배 비율 조회 (없으면 서비스에서 디폴트값으로 적용)
     List<GradeSystem> findGradeSystemByCourse(@Param("courseId") Long courseId,
-                                        @Param("start") int start,
-                                        @Param("end") int end);
+                                              @Param("start") int start,
+                                              @Param("end") int end);
 
     // 과목별 성적비율 총 개수 카운트
-    long countGradeSystemByCourse(Long courseId);
+    long countGradeSystemByCourse(@Param("courseId") Long courseId);
 
     // 점수 분배 비율 작성
     int insertGradeSystem(GradeSystem system);
@@ -72,24 +90,25 @@ public interface GradeMapper {
                              @Param("searchType") String searchType,
                              @Param("searchKeyword") String searchKeyword,
                              @Param("start") int start,
-                             @Param("end") int end,
-                             @Param("pageSize") int pageSize);
+                             @Param("end") int end
+                             );
 
     // 성적 등록
-    void insert(Grade grade, Long professorId);
+    void insert(Grade grade);
 
     // 성적 수정
-    void update(Grade grade, Long professorId);
+    void update(Grade grade);
 
     // 성적 삭제
-    void delete(@Param("id") Long id, Long professorId);
+    void delete(@Param("id") Long id);
 
-    // 개설한 수강 = 교수 검사
-    int AccessEnrollment(@Param("enrollment") Long enrollment, @Param("professorId") Long professorId);
+    // 코스별 점수비율 1건 (없으면 null) — 계산용
+    GradeSystem findGradeSystemOne(@Param("courseId") Long courseId);
 
-    // 본인이 부여한 성적이 맞는지 검사
-    int isOwnerOfGrade(@Param("gradeId") Long gradeId,
-                       @Param("professorId") Long professorId);
+
+    /* ========== 권한체크 ========== */
+    int existsGradeForProfessor(@Param("gradeId") Long gradeId,
+                                @Param("professorId") Long professorId);
 
     /*==================================학생================================*/
     // 학생 성적 총 건수

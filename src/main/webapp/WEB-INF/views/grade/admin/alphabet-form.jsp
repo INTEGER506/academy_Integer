@@ -1,44 +1,29 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page contentType="text/html; charset=UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
-<html>
-<head>
-    <title>점수 규정 관리</title>
-</head>
-<body>
+<h2>${empty as.id ? "글로벌 규정 추가" : "글로벌 규정 수정"}</h2>
 
-<h2>점수 규정 ${mode eq 'edit' ? '수정' : '등록'}</h2>
+<form method="post" action="${action}">
+    <input type="hidden" name="id" value="${as.id}"/>
 
-<c:set var="actionUrl"
-       value="${pageContext.request.contextPath}/grade/admin/rule/${mode eq 'edit' ? 'edit' : 'global/add'}"/>
-<form method="post" action="${actionUrl}">
-    <c:if test="${mode eq 'edit'}">
-        <input type="hidden" name="id" value="${alphabet.id}" />
-    </c:if>
+    <div>
+        <label>학점</label>
+        <select name="alphabet" required>
+            <c:set var="opts" value="A+|A|B+|B|C+|C|D+|D|F"/>
+            <c:forTokens var="opt" items="${opts}" delims="|">
+                <option value="${opt}" <c:if test="${as.alphabet == opt}">selected</c:if>>${opt}</option>
+            </c:forTokens>
+        </select>
+    </div>
 
-    <table border="1">
-        <tr>
-            <th>등급</th>
-            <td><input type="text" name="alphabet" value="${alphabet.alphabet}" required /></td>
-        </tr>
-        <tr>
-            <th>최소 점수</th>
-            <td><input type="number" name="minScore" value="${alphabet.minScore}" required /></td>
-        </tr>
-        <tr>
-            <th>최대 점수</th>
-            <td><input type="number" name="maxScore" value="${alphabet.maxScore}" required /></td>
-        </tr>
-        <tr>
-            <th>비율(%)</th>
-            <td><input type="number" name="ratio" value="${alphabet.ratio}"  min="0" max="100" /></td>
-        </tr>
-    </table>
+    <div>
+        <label>경계값</label>
+        <input type="number" step="0.1" min="0" max="100" name="boundary" value="${as.boundary}" required/>
+        <small>예) 95 → 95점 이상이면 해당 학점</small>
+    </div>
 
-    <div style="margin-top: 12px;">
-        <button type="submit">${mode eq 'edit' ? '저장' : '등록'}</button>
-        <a href="${pageContext.request.contextPath}/grade/admin/rule/global">목록</a>
+    <div class="mt-2">
+        <button type="submit">저장</button>
+        <a href="${pageContext.request.contextPath}/grade/admin/alphabet-list">목록</a>
     </div>
 </form>
-</body>
-</html>

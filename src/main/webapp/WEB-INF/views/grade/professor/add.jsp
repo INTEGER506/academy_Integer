@@ -1,62 +1,32 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page contentType="text/html; charset=UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<html>
-<head>
-    <title>성적 등록</title>
-</head>
-<body>
-<h2> 성적 등록 </h2>
 
-<%-- 등록 처리 폼--%>
+<h2>성적 등록</h2>
+
 <form method="post" action="${pageContext.request.contextPath}/grade/professor/add">
-    <input type="hidden" name="professorId" value="${param.professorId}" />
+    <input type="hidden" name="enrollmentId" value="${param.enrollmentId}"/>
+    <input type="hidden" name="courseId"     value="${param.courseId}"/>
+    <input type="hidden" name="subjectId"    value="${param.subjectId}"/>
 
-    <table border="1">
-        <tr>
-            <th>수강</th>
-            <td><input type="number" name="enrollmentId" required></td>
-        </tr>
-        <tr>
-            <th>과목ID</th>
-            <td><input type="number" name="subjectId"></td>
-        </tr>
-        <tr>
-            <th>학생ID</th>
-            <td><input type="number" name="studentId"></td>
-        </tr>
+    <div>
+        <label>중간</label>
+        <input type="number" name="midExam" min="0" max="100" required/>
+    </div>
+    <div>
+        <label>기말</label>
+        <input type="number" name="finalExam" min="0" max="100" required/>
+    </div>
+    <div>
+        <label>과제</label>
+        <input type="number" name="assignment" min="0" max="100" required/>
+    </div>
+    <div>
+        <label>출석</label>
+        <input type="number" name="attendance" min="0" max="100" required/>
+    </div>
 
-        <tr>
-            <th>중간 점수</th>
-            <td><input type="number" name="midScore" min="0" max="100" /></td>
-        </tr>
-        <tr>
-            <th>기말 점수</th>
-            <td><input type="number" name="finalScore" min="0" max="100" /></td>
-        </tr>
-        <tr>
-            <th>중간 점수</th>
-            <td><input type="number" name="assignmentScore" min="0" max="100" /></td>
-        </tr>
-        <tr>
-            <th>중간 점수</th>
-            <td><input type="number" name="attendanceScore" min="0" max="100" /></td>
-        </tr>
-
-        <tr>
-            <th>등급</th>
-            <td><input type="text" name="alphabet" placeholder="A+, A, B+, ..."/></td>
-        </tr>
-        <tr>
-            <th>총점</th>
-            <td><input type="number" name="score" min="0" max="100" /></td>
-        </tr>
-    </table>
-
-    <div style="margin-top: 12px;">
-        <button type="submit">등록</button>
-        <a href="${pageContext.request.contextPath}/grade/professor/${param.professorId}/list">목록</a>
+    <div class="mt-2">
+        <button type="submit">저장</button>
+        <a href="${pageContext.request.contextPath}/grade/professor/list?courseId=${param.courseId}&subjectId=${param.subjectId}">목록</a>
     </div>
 </form>
-
-</body>
-</html>

@@ -10,7 +10,6 @@
         <result property="alphabet" column="alphabet"/>
         <result property="gpa" column="GPA"/>
         <result property="score" column="score"/>
-        <result property="score" column="score"/>
         <result property="totalInt" column="total_int"/>
         <result property="subjectName" column="subjectName" />
         <result property="midExam" column="mid_exam"/>
@@ -25,13 +24,56 @@
     <!--전체 점수 규정 조회-->
     <select id="findAlphabetGlobal" resultType="com.ac.kr.academy.domain.grade.AlphabetSystem">
         SELECT *
-        FROM (SELECT t.*, ROWNUM rn
-              FROM (SELECT *
-                    FROM alphabet_system
-                    WHERE subject_id IS NULL
-                    ORDER BY id DESC) t
-              WHERE ROWNUM &lt;= #{end})
+        FROM (
+        SELECT t.*, ROWNUM rn
+        FROM (
+        SELECT *
+        FROM alphabet_system
+        WHERE subject_id IS NULL
+        <if test="searchType != null and searchType != '' and searchKeyword != null and searchKeyword != ''">
+            AND (
+            <choose>
+                <when test="searchType == 'alphabet'">
+                    UPPER(alphabet) LIKE '%' || UPPER(#{searchKeyword}) || '%'
+                </when>
+                <when test="searchType == 'boundary'">
+                    TO_CHAR(boundary) LIKE '%' || #{searchKeyword} || '%'
+                </when>
+                <otherwise>
+                    UPPER(alphabet) LIKE '%' || UPPER(#{searchKeyword}) || '%'
+                    OR TO_CHAR(boundary) LIKE '%' || #{searchKeyword} || '%'
+                </otherwise>
+            </choose>
+            )
+        </if>
+        ORDER BY id DESC
+        ) t
+        WHERE ROWNUM &lt;= #{end}
+        )
         WHERE rn &gt; #{start}
+    </select>
+
+    <!-- 전체 규정 카운트 — countAlphabetGlobal 교체 -->
+    <select id="countAlphabetGlobal" resultType="long">
+        SELECT COUNT(*)
+        FROM alphabet_system
+        WHERE subject_id IS NULL
+        <if test="searchType != null and searchType != '' and searchKeyword != null and searchKeyword != ''">
+            AND (
+            <choose>
+                <when test="searchType == 'alphabet'">
+                    UPPER(alphabet) LIKE '%' || UPPER(#{searchKeyword}) || '%'
+                </when>
+                <when test="searchType == 'boundary'">
+                    TO_CHAR(boundary) LIKE '%' || #{searchKeyword} || '%'
+                </when>
+                <otherwise>
+                    UPPER(alphabet) LIKE '%' || UPPER(#{searchKeyword}) || '%'
+                    OR TO_CHAR(boundary) LIKE '%' || #{searchKeyword} || '%'
+                </otherwise>
+            </choose>
+            )
+        </if>
     </select>
 
     <!--특정 과목 규정 조회-->
@@ -51,11 +93,14 @@
         WHERE rn &gt; #{start}
     </select>
 
-    <!---->
-    <select id="countAlphabetGlobal" resultType="long">
+    <!-- 특정 과목 규정 카운트 -->
+    <select id="countAlphabetBySubject" resultType="long">
         SELECT COUNT(*)
         FROM alphabet_system
-        WHERE subject_id IS NULL
+        <where>
+            <if test="subjectId != null">AND subject_id = #{subjectId}</if>
+            <if test="enrollmentId != null">AND enrollment_id = #{enrollmentId}</if>
+        </where>
     </select>
 
     <!-- 글로벌 규정 추가 (subject_id = Null 이면 전체 적용) -->
@@ -63,8 +108,8 @@
         <selectKey keyProperty="id" resultType="long" order="BEFORE">
             SELECT alphabet_system_seq.NEXTVAL FROM dual
         </selectKey>
-        INSERT INTO alphabet_system (id, subject_id, enrollment_id, alphabet, boundary)
-        VALUES (#{id}, NULL, NULL, #{alphabet}, #{boundary})
+        INSERT INTO alphabet_system (id, subject_id, alphabet, boundary)
+        VALUES (#{id}, NULL, #{alphabet}, #{boundary})
     </insert>
 
     <!-- 특정 과목 규정 추가 (subject_id = 값 일경우 적용) -->
@@ -79,13 +124,18 @@
     <!-- 규정 수정  -->
     <update id="updateAlphabetRule" parameterType="com.ac.kr.academy.domain.grade.AlphabetSystem">
         UPDATE alphabet_system
-        SET subject_id    = #{subjectId},
-            enrollment_id = #{enrollmentId},
-            alphabet      = #{alphabet},
-            boundary      = #{boundary}
+        <set>
+            alphabet = #{alphabet},
+            boundary = #{boundary}
+            <if test="subjectId != null">
+                , subject_id = #{subjectId, jdbcType=NUMERIC}
+            </if>
+            <if test="enrollmentId != null">
+                , enrollment_id = #{enrollmentId, jdbcType=NUMERIC}
+            </if>
+        </set>
         WHERE id = #{id}
     </update>
-
     <!-- 규정 삭제  -->
     <delete id="deleteAlphabetRule" parameterType="long">
         DELETE
@@ -136,8 +186,9 @@
         SET mid_exam_ratio   = #{midExamRatio},
             final_exam_ratio = #{finalExamRatio},
             assignment_ratio = #{assignmentRatio},
-            attendance_ratio = #{attendanceRatio}
-        WHERE course_id = #{courseId}
+            attendance_ratio = #{attendanceRatio},
+            course_id        = #{courseId}
+        WHERE id = #{id}
     </update>
 
     <!--특정 수업(course) 성적 총 건수 조회-->
@@ -174,7 +225,7 @@
         SELECT t.*, ROWNUM rn
         FROM (
         SELECT
-        g.id, g.alphabet, g.gpa, g.score, g.total_int,
+        g.id, g.alphabet, g.gpa AS GPA, g.score, g.total_int,
         g.mid_exam, g.final_exam, g.assignment, g.attendance,
         g.student_id, g.enrollment_id, sj.name AS subjectName
         FROM grade g
@@ -278,7 +329,7 @@
         SELECT t.*, ROWNUM rn
         FROM (
         SELECT
-        g.id, g.alphabet, g.gpa, g.score, g.total_int,
+        g.id, g.alphabet, g.gpa AS GPA, g.score, g.total_int,
         g.mid_exam, g.final_exam, g.assignment, g.attendance,
         g.student_id, g.enrollment_id,
         sj.name AS subjectName
@@ -318,7 +369,7 @@
     <!--성적 단건 조회-->
     <select id="findMyGradeById" resultMap="GradeMap">
         SELECT
-            g.id, g.alphabet, g.gpa, g.score, g.total_int,
+            g.id, g.alphabet, g.gpa AS GPA, g.score, g.total_int,
             g.mid_exam, g.final_exam, g.assignment, g.attendance,
             g.student_id, g.enrollment_id,
             sj.name AS subjectName
@@ -334,7 +385,7 @@
     <!--성적 단건 조회-->
     <select id="findById" resultMap="GradeMap">
         SELECT
-            g.id, g.alphabet, g.gpa, g.score, g.total_int,
+            g.id, g.alphabet, g.gpa AS GPA, g.score, g.total_int,
             g.mid_exam, g.final_exam, g.assignment, g.attendance,
             g.student_id, g.enrollment_id,
             sj.name AS subjectName
@@ -345,4 +396,73 @@
         WHERE g.id = #{id}
     </select>
 
+    <!-- ================= 계산용: 규정 전체 로딩 ================= -->
+
+    <!-- 과목/수강 전용 규정 전체 (경계값 내림차순) -->
+    <select id="listAlphabetBySubjectAll"
+            resultType="com.ac.kr.academy.domain.grade.AlphabetSystem">
+        SELECT id,
+        subject_id    AS subjectId,
+        enrollment_id AS enrollmentId,
+        alphabet,
+        boundary
+        FROM alphabet_system
+        <where>
+            <if test="subjectId != null">subject_id = #{subjectId}</if>
+            <if test="enrollmentId != null">
+                <if test="subjectId != null">AND</if> enrollment_id = #{enrollmentId}
+            </if>
+        </where>
+        ORDER BY boundary DESC
+    </select>
+
+    <!-- 글로벌 규정 전체 (경계값 내림차순) -->
+    <select id="listAlphabetGlobalAll"
+            resultType="com.ac.kr.academy.domain.grade.AlphabetSystem">
+        SELECT id,
+               subject_id    AS subjectId,
+               enrollment_id AS enrollmentId,
+               alphabet,
+               boundary
+        FROM alphabet_system
+        WHERE subject_id IS NULL
+          AND enrollment_id IS NULL
+        ORDER BY boundary DESC
+    </select>
+
+    <!-- =========================== 계산용: 비율/보조 ============================ -->
+
+    <!-- 코스별 점수비율 1건 (없으면 null) -->
+    <select id="findGradeSystemOne"
+            parameterType="long"
+            resultType="com.ac.kr.academy.domain.grade.GradeSystem">
+        SELECT id,
+               course_id          AS courseId,
+               mid_exam_ratio     AS midExamRatio,
+               final_exam_ratio   AS finalExamRatio,
+               assignment_ratio   AS assignmentRatio,
+               attendance_ratio   AS attendanceRatio
+        FROM grade_system
+        WHERE course_id = #{courseId}
+            FETCH FIRST 1 ROWS ONLY
+    </select>
+
+    <!-- (선택) 수강ID → 코스ID -->
+    <select id="findCourseIdByEnrollment"
+            parameterType="long"
+            resultType="long">
+        SELECT course_id
+        FROM enrollment
+        WHERE id = #{enrollmentId}
+    </select>
+
+    <!-- ================= [옵션] 권한 체크 ================= -->
+    <select id="existsGradeForProfessor" resultType="int">
+        SELECT COUNT(*)
+        FROM grade g
+                 JOIN enrollment e ON g.enrollment_id = e.id
+                 JOIN course c     ON e.course_id     = c.id
+        WHERE g.id = #{gradeId}
+          AND c.professor_id = #{professorId}
+    </select>
 </mapper>
