@@ -10,6 +10,8 @@ public class Grade {
     private Long score;         //취득 학점
     private Integer totalInt;   //총점(자연수/90점)
     private String subjectName; // 과목명
+    private String studentNo;   // 학번
+    private String studentName; // 학생명
 
     private Integer midExam;    // 중간고사 점수
     private Integer finalExam;  // 기말고사 점수

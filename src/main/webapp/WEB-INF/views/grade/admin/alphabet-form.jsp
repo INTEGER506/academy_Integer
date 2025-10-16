@@ -17,13 +17,13 @@
     </div>
 
     <div>
-        <label>경계값</label>
+        <label>비율 (%)</label>
         <input type="number" step="0.1" min="0" max="100" name="boundary" value="${as.boundary}" required/>
-        <small>예) 95 → 95점 이상이면 해당 학점</small>
+        <small>예) 10 → 상위 10%가 해당 학점을 받음</small>
     </div>
 
     <div class="mt-2">
         <button type="submit">저장</button>
-        <a href="${pageContext.request.contextPath}/grade/admin/alphabet-list">목록</a>
+        <a href="${pageContext.request.contextPath}/grade/admin/rule/global">목록</a>
     </div>
 </form>

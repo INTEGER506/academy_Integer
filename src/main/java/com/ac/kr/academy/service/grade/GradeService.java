@@ -1,9 +1,12 @@
 package com.ac.kr.academy.service.grade;
 
 
+import com.ac.kr.academy.domain.course.Course;
 import com.ac.kr.academy.domain.grade.AlphabetSystem;
 import com.ac.kr.academy.domain.grade.Grade;
 import com.ac.kr.academy.domain.grade.GradeSystem;
+import com.ac.kr.academy.domain.subject.Subject;
+import com.ac.kr.academy.dto.grade.SubjectRuleDTO;
 import com.ac.kr.academy.dto.page.PageRequestDTO;
 import com.ac.kr.academy.dto.page.PageResponseDTO;
 import org.apache.ibatis.annotations.Param;
@@ -39,7 +42,33 @@ public interface GradeService {
     // 규정 삭제
     void deleteAlphabetRule(@Param("id") Long id);
 
+    // 전체 규정을 Map으로 조회
+    Map<String, Double> getGlobalRulesMap();
+
+    // 전체 규정을 List로 조회 (교수용)
+    List<AlphabetSystem> getGlobalRulesAll();
+
+    // 전체 규정 저장 (한 번에 모든 학점 비율 설정)
+    void saveGlobalRules(Map<String, String> params);
+
+    // ================== 과목별 규정 ==================
+    // 모든 과목 조회
+    List<Subject> getAllSubjects();
+
+    // 특정 과목 조회
+    Subject getSubjectById(Long subjectId);
+
+    // 성적이 없는 학생들 조회 (성적 등록용)
+    List<Map<String, Object>> getStudentsWithoutGrade(Long courseId);
+
+
     /*================================교수================================*/
+    // 교수가 개설한 강의 목록 조회
+    PageResponseDTO<Map<String, Object>> listProfessorCourses(Long professorId, 
+                                                              String searchType, 
+                                                              String searchKeyword, 
+                                                              PageRequestDTO req);
+
     // 점수 비율 조회
     PageResponseDTO<GradeSystem> listGradeSystemByCourse(@Param("courseId") Long courseId,
                                                          @Param("searchType") String searchType,
@@ -74,6 +103,11 @@ public interface GradeService {
     Map<String, Object> calculateGradePreview(Grade grade);
 
 
+    // Alphabet 규정 조회 (과목별)
+    List<AlphabetSystem> findAlphabetBySubject(Long courseId);
+
+
+
     /*================================학생================================*/
     // 학생 성적 목록 조회 (페이징 / 검색)
     PageResponseDTO<Grade> listMyGrades(@Param("studentId") Long studentId,
@@ -87,4 +121,12 @@ public interface GradeService {
     /*================================공통================================*/
     // 성적 단건 조회
     Grade findGrade(Long id);
+
+    // ================== 집계/졸업 ==================
+    Map<String, Object> summarizeForStudent(Long studentId);
+    Map<String, Object> checkGraduation(Long studentId, long requiredScore, double requiredAvgGpa);
+
+    // ================== 점수 분배 비율 관리 ==================
+    // 강의 정보 조회
+    Course getCourseById(Long courseId);
 }

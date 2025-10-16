@@ -1,13 +1,17 @@
 package com.ac.kr.academy.mapper.grade;
 
+import com.ac.kr.academy.domain.course.Course;
 import com.ac.kr.academy.domain.grade.AlphabetSystem;
 import com.ac.kr.academy.domain.grade.Grade;
 import com.ac.kr.academy.domain.grade.GradeSystem;
+import com.ac.kr.academy.domain.subject.Subject;
+import com.ac.kr.academy.dto.grade.SubjectRuleDTO;
 import com.ac.kr.academy.dto.page.PageRequestDTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Map;
 
 // 교수 성적관리 , 학생 성적관리
 @Mapper
@@ -61,11 +65,30 @@ public interface GradeMapper {
     // 규정 삭제 (id 기준)
     int deleteAlphabetRule(@Param("id") Long id);
 
+    // 모든 글로벌 규정 삭제
+    int deleteAllGlobalRules();
+
+
     /*==================================교수================================*/
-    // 수업별 점수분배 비율 조회 (없으면 서비스에서 디폴트값으로 적용)
-    List<GradeSystem> findGradeSystemByCourse(@Param("courseId") Long courseId,
-                                              @Param("start") int start,
-                                              @Param("end") int end);
+    // 교수가 개설한 강의 목록 조회
+    List<Map<String, Object>> findProfessorCourses(@Param("professorId") Long professorId,
+                                                   @Param("searchType") String searchType,
+                                                   @Param("searchKeyword") String searchKeyword,
+                                                   @Param("start") int start,
+                                                   @Param("end") int end);
+
+    // 교수가 개설한 강의 목록 총 건수
+    long countProfessorCourses(@Param("professorId") Long professorId,
+                              @Param("searchType") String searchType,
+                              @Param("searchKeyword") String searchKeyword);
+
+    // 성적이 없는 학생들 조회 (성적 등록용)
+    List<Map<String, Object>> findStudentsWithoutGrade(@Param("courseId") Long courseId);
+
+    // 수업별 점수분배 비율 조회 (페이징)
+    List<GradeSystem> findGradeSystemByCoursePaged(@Param("courseId") Long courseId,
+                                                   @Param("start") int start,
+                                                   @Param("end") int end);
 
     // 과목별 성적비율 총 개수 카운트
     long countGradeSystemByCourse(@Param("courseId") Long courseId);
@@ -102,8 +125,6 @@ public interface GradeMapper {
     // 성적 삭제
     void delete(@Param("id") Long id);
 
-    // 코스별 점수비율 1건 (없으면 null) — 계산용
-    GradeSystem findGradeSystemOne(@Param("courseId") Long courseId);
 
 
     /* ========== 권한체크 ========== */
@@ -127,8 +148,26 @@ public interface GradeMapper {
     List<Grade> findMyGradeById(@Param("id") Long id,
                                 @Param("studentId") Long studentId);
 
+    // 집계: 전체 취득학점/평균 GPA (gpa는 ×10 저장이므로 /10 필요)
+    Long sumScoreByStudent(@Param("studentId") Long studentId);
+    Long avgGpa10ByStudent(@Param("studentId") Long studentId);
+
+    // 퍼센트 기반 학점 분배를 위한 통계 메서드들
+    Long countStudentsByEnrollment(@Param("enrollmentId") Long enrollmentId);
+    Long countStudentsWithHigherScore(@Param("enrollmentId") Long enrollmentId, @Param("score") int score);
+
     /*==================================공통================================*/
     //성적 단건 조회
     Grade findById(@Param("id") Long id);
 
+
+    // Alphabet 규정 조회 (글로벌)
+    List<AlphabetSystem> findGlobalAlphabetRules();
+
+
+    // 점수 배율 조회 (단건)
+    GradeSystem findGradeSystemByCourse(@Param("courseId") Long courseId);
+
+    // 강의 정보 조회
+    Course findCourseById(@Param("courseId") Long courseId);
 }

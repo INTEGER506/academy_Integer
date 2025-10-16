@@ -55,4 +55,33 @@ public class GradeRestController {
         return ResponseEntity.ok(page.getData());
     }
 
+    // 코스별 점수 가중치 단건 조회 (없으면 204)
+    @GetMapping("/system")
+    public ResponseEntity<GradeSystem> getGradeSystem(@RequestParam Long courseId) {
+        GradeSystem gs = gradeService.getGradeSystemByCourse(courseId);
+        if (gs == null) return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(gs);
+    }
+
+    // 성적 미리보기 계산 (저장하지 않음)
+    @PostMapping("/preview")
+    public ResponseEntity<Map<String, Object>> preview(@RequestBody Grade grade) {
+        Map<String, Object> result = gradeService.calculateGradePreview(grade);
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+
+    // 학생 집계: 총 취득학점, 평균 GPA
+    @GetMapping("/student/{studentId}/summary")
+    public ResponseEntity<Map<String, Object>> summarize(@PathVariable Long studentId) {
+        return ResponseEntity.ok(gradeService.summarizeForStudent(studentId));
+    }
+
+    // 졸업요건 체크 (요건 파라미터 전달)
+    @GetMapping("/student/{studentId}/graduation")
+    public ResponseEntity<Map<String, Object>> graduation(
+            @PathVariable Long studentId,
+            @RequestParam long requiredScore,
+            @RequestParam double requiredAvgGpa) {
+        return ResponseEntity.ok(gradeService.checkGraduation(studentId, requiredScore, requiredAvgGpa));
+    }
 }

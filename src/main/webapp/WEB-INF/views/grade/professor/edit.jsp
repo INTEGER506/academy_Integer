@@ -29,19 +29,19 @@
 
         <tr>
             <th>중간 점수</th>
-            <td><input type="number" name="midScore" min="0" max="100" value="${grade.midScore}"/></td>
+            <td><input type="number" name="midExam" min="0" max="100" value="${grade.midExam}"/></td>
         </tr>
         <tr>
             <th>기말 점수</th>
-            <td><input type="number" name="finalScore" min="0" max="100" value="${grade.finalScore}"/></td>
+            <td><input type="number" name="finalExam" min="0" max="100" value="${grade.finalExam}"/></td>
         </tr>
         <tr>
             <th>과제 점수</th>
-            <td><input type="number" name="assignmentScore" min="0" max="100" value="${grade.assignmentScore}"/></td>
+            <td><input type="number" name="assignment" min="0" max="100" value="${grade.assignment}"/></td>
         </tr>
         <tr>
             <th>출석 점수</th>
-            <td><input type="number" name="attendanceScore" min="0" max="100" value="${grade.attendanceScore}"/></td>
+            <td><input type="number" name="attendance" min="0" max="100" value="${grade.attendance}"/></td>
         </tr>
 
         <tr>
@@ -55,10 +55,37 @@
     </table>
 
     <div style="margin-top:12px;">
+        <button type="button" onclick="previewGrade()">미리보기</button>
+        <span id="previewArea" style="margin-left:8px;color:#333"></span>
         <button type="submit">저장</button>
         <a href="${pageContext.request.contextPath}/grade/professor/list?professorId=${param.professorId}">목록</a>
     </div>
+    
+    <div style="margin-top: 15px; padding: 10px; background-color: #f8f9fa; border-radius: 4px;">
+        <strong>📊 성적 규정 확인:</strong>
+        <a href="${pageContext.request.contextPath}/grade/professor/rule/global" target="_blank" style="margin-left: 10px;">글로벌 규정 보기</a>
+        <a href="${pageContext.request.contextPath}/grade/professor/rule/subject/${param.subjectId}" target="_blank" style="margin-left: 10px;">과목별 규정 보기</a>
+    </div>
 </form>
+
+<script>
+    async function previewGrade(){
+        const body = {
+            enrollmentId: Number(document.querySelector('input[name="enrollmentId"]').value),
+            midExam: Number(document.querySelector('input[name="midExam"]').value||0),
+            finalExam: Number(document.querySelector('input[name="finalExam"]').value||0),
+            assignment: Number(document.querySelector('input[name="assignment"]').value||0),
+            attendance: Number(document.querySelector('input[name="attendance"]').value||0)
+        };
+        const res = await fetch(`${location.origin}/api/grade/preview`,{
+            method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)
+        });
+        if(!res.ok){ document.getElementById('previewArea').textContent='미리보기 실패'; return; }
+        const data = await res.json();
+        const gpa = (data.gpa10/10).toFixed(1);
+        document.getElementById('previewArea').textContent = `총점 ${data.totalScore}, 학점 ${data.alphabet}, GPA ${gpa}`;
+    }
+</script>
 
 </body>
 </html>

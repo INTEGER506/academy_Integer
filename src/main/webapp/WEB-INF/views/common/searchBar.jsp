@@ -22,7 +22,24 @@
     <input type="hidden" name="page" value="1"/>
 
     <!-- 모듈별 유지 파라미터(필요 없으면 비워서 넘기기) -->
-    ${keep}
+    <!-- 1. keepParams 방식 (우선) -->
+    <c:if test="${not empty keepParams}">
+        <c:forEach var="e" items="${keepParams}">
+            <input type="hidden" name="${e.key}" value="${e.value}"/>
+        </c:forEach>
+    </c:if>
+    
+    <!-- 2. keep 문자열 방식 (하위 호환) -->
+    <c:if test="${empty keepParams and not empty keep}">
+        <c:forTokens var="param" items="${keep}" delims="&">
+            <c:if test="${not empty param and fn:contains(param, '=')}">
+                <c:set var="keyValue" value="${fn:split(param, '=')}"/>
+                <c:if test="${fn:length(keyValue) == 2 and not empty keyValue[0] and not empty keyValue[1]}">
+                    <input type="hidden" name="${fn:trim(keyValue[0])}" value="${fn:trim(keyValue[1])}"/>
+                </c:if>
+            </c:if>
+        </c:forTokens>
+    </c:if>
 
     <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin:6px 0;">
         <!-- 동적 체크 옵션 -->
