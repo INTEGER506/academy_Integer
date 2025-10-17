@@ -51,6 +51,7 @@ public interface GradeService {
     // 전체 규정 저장 (한 번에 모든 학점 비율 설정)
     void saveGlobalRules(Map<String, String> params);
 
+
     // ================== 과목별 규정 ==================
     // 모든 과목 조회
     List<Subject> getAllSubjects();
@@ -129,4 +130,19 @@ public interface GradeService {
     // ================== 점수 분배 비율 관리 ==================
     // 강의 정보 조회
     Course getCourseById(Long courseId);
+    
+    // ================== 과목별 규정 관리 ==================
+    // 과목별 규정 상태 조회 (글로벌 vs 커스텀)
+    PageResponseDTO<Map<String, Object>> listSubjectRulesStatus(String searchType, 
+                                                               String searchKeyword, 
+                                                               PageRequestDTO req);
+    
+    // 과목별 규정 초기화 (글로벌 규정으로 되돌리기)
+    void resetSubjectToGlobal(Long subjectId);
+    
+    // 과목별 규정 인라인 저장
+    void saveSubjectRulesInline(Map<String, String> params);
+    
+    // 글로벌 규정을 복사하여 커스텀 규정 생성
+    void createCustomRulesFromGlobal(Long subjectId);
 }

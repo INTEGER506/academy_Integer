@@ -110,7 +110,7 @@
         FROM (
         SELECT * FROM alphabet_system
         <where>
-            <if test="courseId != null">AND course_id = #{courseId}</if>
+            <if test="subjectId != null">AND course_id = #{subjectId}</if>
         </where>
         ORDER BY id DESC
         )t
@@ -131,7 +131,7 @@
     <select id="findAlphabetBySubject" resultType="com.ac.kr.academy.domain.grade.AlphabetSystem">
         SELECT id, course_id as courseId, alphabet, boundary
         FROM alphabet_system
-        WHERE course_id = #{courseId}
+        WHERE course_id = #{subjectId}
         ORDER BY boundary DESC
     </select>
 
@@ -140,7 +140,7 @@
         SELECT COUNT(*)
         FROM alphabet_system
         <where>
-            <if test="courseId != null">AND course_id = #{courseId}</if>
+            <if test="subjectId != null">AND course_id = #{subjectId}</if>
         </where>
     </select>
 
@@ -150,7 +150,7 @@
             SELECT alphabet_system_seq.NEXTVAL FROM dual
         </selectKey>
         INSERT INTO alphabet_system (id, course_id, alphabet, boundary, description)
-        VALUES (#{id}, NULL, #{alphabet}, #{boundary}, #{description})
+        VALUES (#{id}, #{courseId, jdbcType=NUMERIC}, #{alphabet}, #{boundary}, #{description})
     </insert>
 
     <!-- 특정 강의 규정 추가 (course_id = 값 일경우 적용) -->
@@ -159,7 +159,7 @@
             SELECT alphabet_system_seq.NEXTVAL FROM dual
         </selectKey>
         INSERT INTO alphabet_system (id, course_id, alphabet, boundary, description)
-        VALUES (#{id}, #{courseId}, #{alphabet}, #{boundary}, #{description})
+        VALUES (#{id}, #{courseId, jdbcType=NUMERIC}, #{alphabet}, #{boundary}, #{description})
     </insert>
 
     <!-- 규정 수정  -->
@@ -188,6 +188,15 @@
         FROM alphabet_system
         WHERE course_id IS NULL
     </delete>
+
+    <!-- 특정 과목의 모든 규정 삭제 -->
+    <delete id="deleteAlphabetBySubject">
+        DELETE
+        FROM alphabet_system
+        WHERE course_id = #{subjectId}
+    </delete>
+
+    <!-- 🔥 제거됨: 모든 과목별 규정 삭제 (더 이상 사용하지 않음) -->
 
     <!-- ================== 과목별 규정 ================== -->
     <!-- 모든 과목 조회 -->
@@ -284,7 +293,7 @@
         SELECT
         g.id, g.alphabet, g.gpa AS GPA, g.score, g.total_int,
         g.mid_exam, g.final_exam, g.assignment, g.attendance,
-        e.student_id, e.id as enrollment_id, sj.name AS subjectName,
+        e.student_id, e.id as ENROLLMENT_ID, sj.name AS subjectName,
         s.student_num AS studentNo, u.name AS studentName
         FROM enrollment e
         JOIN course c ON e.course_id = c.id
@@ -471,12 +480,17 @@
     <select id="listAlphabetBySubjectAll"
             resultType="com.ac.kr.academy.domain.grade.AlphabetSystem">
         SELECT id,
-        course_id     AS courseId,
-        alphabet,
-        boundary
+               course_id     AS courseId,
+               alphabet,
+               boundary
         FROM alphabet_system
         <where>
-            <if test="courseId != null">course_id = #{courseId}</if>
+            <if test="subjectId != null">
+                AND course_id = #{subjectId}
+            </if>
+            <if test="subjectId == null">
+                AND course_id IS NOT NULL
+            </if>
         </where>
         ORDER BY boundary DESC
     </select>
@@ -509,28 +523,23 @@
     <!-- 과목별 규정 총 건수 -->
     <select id="countSubjectRules" resultType="long">
         SELECT COUNT(*)
-        FROM (
-            SELECT DISTINCT s.id, s.name
-            FROM subject s
-            LEFT JOIN alphabet_system a ON s.id = a.course_id
-            <where>
-                a.course_id IS NOT NULL
-                <if test="searchType != null and searchType != '' and searchKeyword != null and searchKeyword != ''">
-                    AND (
-                        <foreach collection="searchType.split('\\|')" item="t" separator=" OR ">
-                            <choose>
-                                <when test="t == 'id'">
-                                    s.id = TO_NUMBER(#{searchKeyword})
-                                </when>
-                                <when test="t == 'name'">
-                                    UPPER(s.name) LIKE '%' || UPPER(#{searchKeyword}) || '%'
-                                </when>
-                            </choose>
-                        </foreach>
-                    )
-                </if>
-            </where>
-        )
+        FROM subject s
+        <where>
+            <if test="searchType != null and searchType != '' and searchKeyword != null and searchKeyword != ''">
+                <choose>
+                    <when test="searchType == 'subject'">
+                        AND UPPER(s.name) LIKE '%' || UPPER(#{searchKeyword}) || '%'
+                    </when>
+                    <when test="searchType == 'id'">
+                        AND s.id = TO_NUMBER(#{searchKeyword})
+                    </when>
+                    <otherwise>
+                        AND (UPPER(s.name) LIKE '%' || UPPER(#{searchKeyword}) || '%'
+                             OR s.id = TO_NUMBER(#{searchKeyword}))
+                    </otherwise>
+                </choose>
+            </if>
+        </where>
     </select>
 
 
@@ -660,5 +669,35 @@
         FROM course
         WHERE id = #{courseId}
     </select>
+
+    <!-- 과목별 규정 상태 조회 -->
+    <select id="findSubjectRulesStatus" resultType="Map">
+        SELECT * FROM (
+            SELECT 
+                s.id as subjectId,
+                s.name as subjectName,
+                s.credit,
+                ROW_NUMBER() OVER (ORDER BY s.id DESC) as rn
+            FROM subject s
+            <where>
+                <if test="searchType != null and searchType != '' and searchKeyword != null and searchKeyword != ''">
+                    <choose>
+                        <when test="searchType == 'subject'">
+                            AND UPPER(s.name) LIKE '%' || UPPER(#{searchKeyword}) || '%'
+                        </when>
+                        <when test="searchType == 'id'">
+                            AND s.id = TO_NUMBER(#{searchKeyword})
+                        </when>
+                        <otherwise>
+                            AND (UPPER(s.name) LIKE '%' || UPPER(#{searchKeyword}) || '%'
+                                 OR s.id = TO_NUMBER(#{searchKeyword}))
+                        </otherwise>
+                    </choose>
+                </if>
+            </where>
+        ) WHERE rn BETWEEN #{start} AND #{end}
+    </select>
+
+    <!-- 🔥 제거됨: 과목별 규정 삭제 (deleteAlphabetBySubject와 중복) -->
 
 </mapper>

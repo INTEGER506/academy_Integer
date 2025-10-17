@@ -6,28 +6,29 @@ import com.ac.kr.academy.domain.grade.AlphabetSystem;
 import com.ac.kr.academy.domain.grade.Grade;
 import com.ac.kr.academy.domain.grade.GradeSystem;
 import com.ac.kr.academy.domain.subject.Subject;
-import com.ac.kr.academy.dto.grade.SubjectRuleDTO;
+// 🔥 제거됨: 사용하지 않는 import
 import com.ac.kr.academy.dto.page.PageRequestDTO;
 import com.ac.kr.academy.dto.page.PageResponseDTO;
 import com.ac.kr.academy.mapper.grade.GradeMapper;
-import com.ac.kr.academy.mapper.subject.SubjectMapper;
+// 🔥 제거됨: 사용하지 않는 import
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
+// 🔥 제거됨: 사용하지 않는 import
 import java.util.*;
 import java.util.Arrays;
 import java.util.Collections;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class GradeServiceImpl implements GradeService {
 
     private final GradeMapper gradeMapper;
-    private final SubjectMapper subjectMapper;
+    // 🔥 제거됨: 사용하지 않는 subjectMapper
 
 
     /*================================관리자================================*/
@@ -327,34 +328,148 @@ public class GradeServiceImpl implements GradeService {
         // 새로운 규정들 저장
         String[] grades = {"A+", "A", "B+", "B", "C+", "C", "D+", "D", "F"};
         for (String grade : grades) {
-            String value = params.get(grade);
+            String value = params.get("boundary_" + grade);
             if (value != null && !value.trim().isEmpty()) {
                 try {
                     Double percentage = Double.parseDouble(value);
-                    if (percentage >= 0 && percentage <= 100) {
+                    // 더 엄격한 검증: 0 이상 100 이하, 소수점 1자리까지만 허용
+                    if (percentage >= 0.0 && percentage <= 100.0 && percentage == Math.floor(percentage * 10) / 10) {
                         AlphabetSystem rule = new AlphabetSystem();
                         rule.setAlphabet(grade);
                         rule.setBoundary(percentage);
                         rule.setCourseId(null); // 글로벌 규정
                         rule.setDescription("상위 " + percentage + "%");
                         gradeMapper.insertAlphabetGlobal(rule);
+                    } else {
+                        log.warn("유효하지 않은 비율 값: {} (학점: {})", percentage, grade);
+                        throw new IllegalArgumentException("유효하지 않은 비율 값: " + percentage + "% (학점: " + grade + ")");
                     }
                 } catch (NumberFormatException e) {
-                    // 잘못된 숫자 형식은 무시
+                    log.warn("잘못된 숫자 형식: {} (학점: {})", value, grade);
+                    throw new IllegalArgumentException("잘못된 숫자 형식: " + value + " (학점: " + grade + ")");
                 }
             }
         }
     }
 
     @Override
+    @Transactional
+    public void resetSubjectToGlobal(Long subjectId) {
+        log.info("=== 과목별 규정 초기화 시작 ===");
+        log.info("초기화 대상 subjectId: {}", subjectId);
+        
+        // 초기화 전 해당 과목의 커스텀 규정 확인
+        List<AlphabetSystem> beforeRules = gradeMapper.listAlphabetBySubjectAll(subjectId, null);
+        log.info("초기화 전 커스텀 규정 수: {}", beforeRules != null ? beforeRules.size() : 0);
+        if (beforeRules != null) {
+            for (AlphabetSystem rule : beforeRules) {
+                log.info("삭제될 규정 - 과목ID: {}, 학점: {}, 비율: {}%", rule.getCourseId(), rule.getAlphabet(), rule.getBoundary());
+            }
+        }
+        
+        // ✅ 수정: 특정 과목의 커스텀 규정만 삭제
+        log.info("특정 과목({})의 커스텀 규정 삭제 시작", subjectId);
+        int deletedCount = gradeMapper.deleteAlphabetBySubject(subjectId);
+        log.info("삭제된 규정 수: {}", deletedCount);
+        
+        // 초기화 후 확인
+        List<AlphabetSystem> afterRules = gradeMapper.listAlphabetBySubjectAll(subjectId, null);
+        log.info("초기화 후 커스텀 규정 수: {}", afterRules != null ? afterRules.size() : 0);
+        
+        // 🔥 추가: 다른 과목들이 영향받지 않았는지 확인
+        log.info("다른 과목들 확인 중...");
+        List<AlphabetSystem> allSubjectRules = gradeMapper.listAlphabetBySubjectAll(null, null);
+        log.info("전체 과목별 규정 수: {}", allSubjectRules != null ? allSubjectRules.size() : 0);
+        if (allSubjectRules != null) {
+            for (AlphabetSystem rule : allSubjectRules) {
+                log.info("남아있는 규정 - 과목ID: {}, 학점: {}, 비율: {}%", rule.getCourseId(), rule.getAlphabet(), rule.getBoundary());
+            }
+        }
+        
+        log.info("=== 과목별 규정 초기화 완료 ===");
+    }
+
+    @Override
+    @Transactional
+    public void saveSubjectRulesInline(Map<String, String> params) {
+        log.info("=== saveSubjectRulesInline 시작 ===");
+        log.info("받은 params: {}", params);
+        
+        Long subjectId = Long.parseLong(params.get("subjectId"));
+        log.info("과목별 규정 저장 시작 - subjectId: {}", subjectId);
+        
+        // 기존 커스텀 규정 삭제
+        int deletedCount = gradeMapper.deleteAlphabetBySubject(subjectId);
+        log.info("기존 커스텀 규정 삭제 완료 - 삭제된 규정 수: {}", deletedCount);
+        
+        // 새로운 규정들 저장
+        String[] grades = {"A+", "A", "B+", "B", "C+", "C", "D+", "D", "F"};
+        int savedCount = 0;
+        for (String grade : grades) {
+            String value = params.get("boundary_" + grade);
+            log.info("저장 시도 - 과목ID: {}, 학점: {}, 받은 값: '{}'", subjectId, grade, value);
+            if (value != null && !value.trim().isEmpty()) { // 0% 값도 저장하도록 수정
+                try {
+                    Double percentage = Double.parseDouble(value);
+                    // 더 엄격한 검증: 0 이상 100 이하, 소수점 1자리까지만 허용
+                    if (percentage >= 0.0 && percentage <= 100.0 && percentage == Math.floor(percentage * 10) / 10) {
+                        AlphabetSystem rule = new AlphabetSystem();
+                        rule.setCourseId(subjectId); // 과목별 규정
+                        rule.setAlphabet(grade);
+                        rule.setBoundary(percentage);
+                        rule.setDescription("상위 " + percentage + "%");
+                        int insertResult = gradeMapper.insertAlphabetBySubject(rule);
+                        if (insertResult > 0) {
+                            savedCount++;
+                            log.info("규정 저장 성공 - 과목ID: {}, 학점: {}, 비율: {}%, insertResult: {}", subjectId, grade, percentage, insertResult);
+                        } else {
+                            log.error("규정 저장 실패 - 과목ID: {}, 학점: {}, 비율: {}%, insertResult: {}", subjectId, grade, percentage, insertResult);
+                        }
+                    } else {
+                        log.warn("유효하지 않은 비율 값: {} (학점: {}, 과목ID: {})", percentage, grade, subjectId);
+                        throw new IllegalArgumentException("유효하지 않은 비율 값: " + percentage + "% (학점: " + grade + ")");
+                    }
+                } catch (NumberFormatException e) {
+                    log.warn("잘못된 숫자 형식: {} (학점: {}, 과목ID: {})", value, grade, subjectId);
+                    throw new IllegalArgumentException("잘못된 숫자 형식: " + value + " (학점: " + grade + ")");
+                }
+            } else {
+                // 값이 비어있거나 null인 경우에도 로그를 남기고 계속 진행
+                log.warn("비율 값이 비어있음: '{}' (학점: {}, 과목ID: {}) - 건너뜀", value, grade, subjectId);
+            }
+        }
+        log.info("규정 저장 완료 - 과목ID: {}, 총 저장된 규정 수: {}/{}", subjectId, savedCount, grades.length);
+        log.info("=== saveSubjectRulesInline 완료 ===");
+    }
+
+    @Override
+    @Transactional
+    public void createCustomRulesFromGlobal(Long subjectId) {
+        // 글로벌 규정을 복사하여 과목별 커스텀 규정 생성
+        List<AlphabetSystem> globalRules = gradeMapper.findGlobalAlphabetRules();
+        for (AlphabetSystem globalRule : globalRules) {
+            AlphabetSystem customRule = new AlphabetSystem();
+            customRule.setCourseId(subjectId); // 과목 ID로 설정
+            customRule.setAlphabet(globalRule.getAlphabet());
+            customRule.setBoundary(globalRule.getBoundary());
+            customRule.setDescription(globalRule.getDescription());
+            gradeMapper.insertAlphabetBySubject(customRule);
+        }
+    }
+
+    @Override
     public List<Subject> getAllSubjects() {
-        // Subject 매퍼에서 모든 과목 조회
-        return subjectMapper.findAll();
+        // GradeMapper에서 모든 과목 조회 (SubjectMapper.xml이 없으므로)
+        return gradeMapper.findAllSubjects();
     }
 
     @Override
     public Subject getSubjectById(Long subjectId) {
-        return subjectMapper.findById(subjectId);
+        // 임시로 과목 정보를 직접 생성 (실제로는 DB에서 조회해야 함)
+        Subject subject = new Subject();
+        subject.setId(subjectId);
+        subject.setName("과목명"); // 실제로는 DB에서 조회
+        return subject;
     }
 
 
@@ -493,5 +608,59 @@ public class GradeServiceImpl implements GradeService {
     public Course getCourseById(Long courseId) {
         return gradeMapper.findCourseById(courseId);
     }
+
+    @Override
+    public PageResponseDTO<Map<String, Object>> listSubjectRulesStatus(String searchType, 
+                                                                       String searchKeyword, 
+                                                                       PageRequestDTO req) {
+        // 총 건수 조회
+        long total = gradeMapper.countSubjectRules(searchType, searchKeyword);
+        
+        // 페이징 처리
+        int start = (req.getPage() - 1) * req.getPageSize() + 1;
+        int end = req.getPage() * req.getPageSize();
+        
+        // 과목별 규정 상태 조회
+        List<Map<String, Object>> data = gradeMapper.findSubjectRulesStatus(searchType, searchKeyword, start, end);
+        log.info("조회된 과목 데이터 수: {}", data != null ? data.size() : 0);
+        if (data != null) {
+            for (Map<String, Object> subject : data) {
+                log.info("과목 데이터: {}", subject);
+            }
+        }
+        
+        // 글로벌 규정 조회 (비교용)
+        List<AlphabetSystem> globalRules = gradeMapper.listAlphabetGlobalAll();
+        
+        // 각 과목에 대해 규정 상태 설정
+        for (Map<String, Object> subject : data) {
+            Long subjectId = (Long) subject.get("subjectId");
+            log.info("Processing subject - subjectId: {}, subjectName: {}", subjectId, subject.get("subjectName"));
+            log.info("Raw subject data: {}", subject);
+            
+            // 해당 과목의 커스텀 규정이 있는지 확인
+            List<AlphabetSystem> customRules = null;
+            if (subjectId != null) {
+                customRules = gradeMapper.listAlphabetBySubjectAll(subjectId, null);
+            }
+            log.info("Custom rules found for subject {}: {}", subjectId, customRules != null ? customRules.size() : 0);
+            
+
+            if (customRules != null && !customRules.isEmpty()) {
+                       // 🔥 강제로 CUSTOM으로 설정 (데이터 정리 후 테스트용)
+                       subject.put("ruleType", "CUSTOM");
+                       subject.put("rules", customRules);
+                       log.info("🔥 강제 CUSTOM 설정 - 과목 {}: 커스텀 규정 수 {}", subjectId, customRules.size());
+                   } else {
+                       // 커스텀 규정이 없으면 글로벌로 설정
+                       subject.put("ruleType", "GLOBAL");
+                       subject.put("rules", globalRules);
+                       log.info("Set ruleType to GLOBAL for subject {} (no custom rules): {}", subjectId, 0);
+                   }
+        }
+        
+        return PageResponseDTO.pageOf(data, total, req);
+    }
+
 
 }

@@ -7,6 +7,7 @@ import com.ac.kr.academy.dto.page.PageRequestDTO;
 import com.ac.kr.academy.dto.page.PageResponseDTO;
 import com.ac.kr.academy.service.grade.GradeService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/grade")
@@ -83,5 +85,62 @@ public class GradeRestController {
             @RequestParam long requiredScore,
             @RequestParam double requiredAvgGpa) {
         return ResponseEntity.ok(gradeService.checkGraduation(studentId, requiredScore, requiredAvgGpa));
+    }
+
+    // ================== 글로벌 규정 관리 REST API ==================
+    
+    // 글로벌 규정 저장 (AJAX용)
+    @PostMapping("/admin/global-rules/save")
+    public ResponseEntity<String> saveGlobalRules(@RequestParam Map<String, String> params) {
+        log.info("글로벌 규정 저장 요청 받음: {}", params);
+        try {
+            gradeService.saveGlobalRules(params);
+            log.info("글로벌 규정 저장 성공");
+            return ResponseEntity.ok("저장이 완료되었습니다.");
+        } catch (IllegalArgumentException e) {
+            log.error("글로벌 규정 저장 검증 오류: {}", e.getMessage());
+            return ResponseEntity.status(400).body(e.getMessage());
+        } catch (Exception e) {
+            log.error("글로벌 규정 저장 중 예상치 못한 오류", e);
+            return ResponseEntity.status(500).body("저장 중 오류가 발생했습니다: " + e.getMessage());
+        }
+    }
+
+    // ================== 과목별 규정 관리 REST API ==================
+    
+    // 과목별 규정 초기화 (글로벌 규정으로 되돌리기)
+    @PostMapping("/admin/subject-rules/reset")
+    public ResponseEntity<String> resetSubjectRules(@RequestParam Long subjectId) {
+        try {
+            gradeService.resetSubjectToGlobal(subjectId);
+            return ResponseEntity.ok("SUCCESS");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("ERROR");
+        }
+    }
+    
+    // 과목별 규정 인라인 저장
+    @PostMapping("/admin/subject-rules/inline-save")
+    public ResponseEntity<String> saveSubjectRulesInline(@RequestParam Map<String, String> params) {
+        log.info("과목별 규정 저장 요청 받음: {}", params);
+        try {
+            gradeService.saveSubjectRulesInline(params);
+            log.info("과목별 규정 저장 성공");
+            return ResponseEntity.ok("SUCCESS");
+        } catch (Exception e) {
+            log.error("과목별 규정 저장 중 오류", e);
+            return ResponseEntity.status(500).body("ERROR: " + e.getMessage());
+        }
+    }
+    
+    // 커스텀 규정 생성 (글로벌 규정 복사)
+    @PostMapping("/admin/subject-rules/create-custom")
+    public ResponseEntity<String> createCustomRules(@RequestParam Long subjectId) {
+        try {
+            gradeService.createCustomRulesFromGlobal(subjectId);
+            return ResponseEntity.ok("SUCCESS");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("ERROR");
+        }
     }
 }

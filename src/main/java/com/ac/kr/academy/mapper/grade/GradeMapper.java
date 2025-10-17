@@ -5,8 +5,7 @@ import com.ac.kr.academy.domain.grade.AlphabetSystem;
 import com.ac.kr.academy.domain.grade.Grade;
 import com.ac.kr.academy.domain.grade.GradeSystem;
 import com.ac.kr.academy.domain.subject.Subject;
-import com.ac.kr.academy.dto.grade.SubjectRuleDTO;
-import com.ac.kr.academy.dto.page.PageRequestDTO;
+// 🔥 제거됨: 사용하지 않는 import
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -67,6 +66,15 @@ public interface GradeMapper {
 
     // 모든 글로벌 규정 삭제
     int deleteAllGlobalRules();
+
+    // 특정 과목의 모든 규정 삭제
+    int deleteAlphabetBySubject(@Param("subjectId") Long subjectId);
+    
+    // 🔥 임시 해결책: 모든 과목별 규정 삭제 (데이터 정리용)
+    // 🔥 제거됨: 모든 과목별 규정 삭제 (더 이상 사용하지 않음)
+
+    // 모든 과목 조회 (임시용)
+    List<Subject> findAllSubjects();
 
 
     /*==================================교수================================*/
@@ -170,4 +178,17 @@ public interface GradeMapper {
 
     // 강의 정보 조회
     Course findCourseById(@Param("courseId") Long courseId);
+
+    
+    // 과목별 규정 상태 조회
+    List<Map<String, Object>> findSubjectRulesStatus(@Param("searchType") String searchType,
+                                                     @Param("searchKeyword") String searchKeyword,
+                                                     @Param("start") int start,
+                                                     @Param("end") int end);
+    
+    // 과목별 규정 상태 총 건수
+    long countSubjectRules(@Param("searchType") String searchType,
+                          @Param("searchKeyword") String searchKeyword);
+    
+    // 🔥 제거됨: 과목별 규정 삭제 (deleteAlphabetBySubject와 중복)
 }

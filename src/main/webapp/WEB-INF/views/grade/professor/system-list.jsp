@@ -3,6 +3,7 @@
 
 <h2>점수 비율(강의별)</h2>
 
+
 <jsp:include page="/WEB-INF/views/common/searchBar.jsp">
     <jsp:param name="formAction"      value="${pageContext.request.contextPath}/grade/professor/system-list"/>
     <jsp:param name="optionValues"    value="courseName"/>
@@ -17,11 +18,12 @@
     <thead>
     <tr>
         <th>#</th>
-        <th>강의</th>
-        <th>중간%</th>
-        <th>기말%</th>
-        <th>과제%</th>
-        <th>출석%</th>
+        <th>강의명</th>
+        <th>중간</th>
+        <th>기말</th>
+        <th>과제</th>
+        <th>출석</th>
+        <th>총합</th>
         <th>관리</th>
     </tr>
     </thead>
@@ -29,18 +31,26 @@
     <c:forEach var="gs" items="${result.data}" varStatus="st">
         <tr>
             <td>${(result.currentPage - 1) * result.pageSize + st.index + 1}</td>
-            <td>${gs.courseId}</td>
-            <td>${gs.midExamRatio}</td>
-            <td>${gs.finalExamRatio}</td>
-            <td>${gs.assignmentRatio}</td>
-            <td>${gs.attendanceRatio}</td>
             <td>
-                <a href="${pageContext.request.contextPath}/grade/professor/system/edit?id=${gs.id}&courseId=${courseId}&subjectId=${subjectId}">수정</a>
+                <c:choose>
+                    <c:when test="${gs.courseId == 1}">알고리즘</c:when>
+                    <c:when test="${gs.courseId == 2}">데이터베이스</c:when>
+                    <c:otherwise>강의 #${gs.courseId}</c:otherwise>
+                </c:choose>
+            </td>
+            <td>${gs.midExamRatio}%</td>
+            <td>${gs.finalExamRatio}%</td>
+            <td>${gs.assignmentRatio}%</td>
+            <td>${gs.attendanceRatio}%</td>
+            <td>${gs.midExamRatio + gs.finalExamRatio + gs.assignmentRatio + gs.attendanceRatio}%</td>
+            <td>
+                <a href="${pageContext.request.contextPath}/grade/professor/system/edit?id=${gs.id}&courseId=${gs.courseId}&subjectId=${subjectId}" 
+                   style="background-color: #007bff; color: white; padding: 5px 10px; text-decoration: none; border-radius: 3px;">수정</a>
             </td>
         </tr>
     </c:forEach>
     <c:if test="${empty result.data}">
-        <tr><td colspan="7">데이터가 없습니다.</td></tr>
+        <tr><td colspan="8">데이터가 없습니다.</td></tr>
     </c:if>
     </tbody>
 </table>

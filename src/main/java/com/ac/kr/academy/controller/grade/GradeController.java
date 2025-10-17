@@ -48,37 +48,6 @@ public class GradeController {
         return "grade/admin/alphabet-list";
     }
 
-    // 추가 폼 (GET)
-    @GetMapping("/admin/alphabet/add")
-    public String adminAlphabetAddForm(Model model) {
-        model.addAttribute("as", new AlphabetSystem());
-        model.addAttribute("action", "/grade/admin/alphabet/add");
-        return "grade/admin/alphabet-form";
-    }
-
-    // 추가 처리 (POST)
-    @PostMapping("/admin/alphabet/add")
-    public String adminAlphabetAdd(@ModelAttribute AlphabetSystem as) {
-        gradeService.addAlphabetGlobal(as);
-        return "redirect:/grade/admin/rule/global";
-    }
-
-    // 수정 폼 (GET) — 필요시 단건조회 붙이면 됨
-    @GetMapping("/admin/alphabet/edit")
-    public String adminAlphabetEditForm(@RequestParam Long id, Model model) {
-        AlphabetSystem as = new AlphabetSystem();
-        as.setId(id);
-        model.addAttribute("as", as);
-        model.addAttribute("action", "/grade/admin/alphabet/edit");
-        return "grade/admin/alphabet-form";
-    }
-
-    // 수정 처리 (POST)
-    @PostMapping("/admin/alphabet/edit")
-    public String adminAlphabetEdit(@ModelAttribute AlphabetSystem as) {
-        gradeService.updateAlphabetRule(as);
-        return "redirect:/grade/admin/rule/global";
-    }
 
     // 삭제 (POST)
     @PostMapping("/admin/alphabet/delete")
@@ -96,34 +65,10 @@ public class GradeController {
         return "grade/admin/global-rules-form";
     }
 
-    // 전체 규정 저장
-    @PostMapping("/admin/global-rules/save")
-    public String saveGlobalRules(@RequestParam Map<String, String> params) {
-        gradeService.saveGlobalRules(params);
-        return "redirect:/grade/admin/rule/global";
-    }
+    // 전체 규정 저장은 RestController에서 처리 (/api/grade/admin/global-rules/save)
 
-    // 과목별 규정 등록 폼
-    @GetMapping("/admin/subject-rules/form")
-    public String subjectRulesForm(@RequestParam(required = false) Long subjectId, Model model) {
-        List<Subject> subjects = gradeService.getAllSubjects();
-        model.addAttribute("subjects", subjects);
-        
-        // 특정 과목 ID가 전달된 경우 해당 과목 정보 추가
-        if (subjectId != null) {
-            Subject selectedSubject = gradeService.getSubjectById(subjectId);
-            model.addAttribute("selectedSubject", selectedSubject);
-        }
-        
-        return "grade/admin/subject-rules-form";
-    }
 
-    // 과목별 규정 저장
-    @PostMapping("/admin/subject-rules/save")
-    public String saveSubjectRules(@RequestParam Map<String, String> params) {
-        // 간단한 저장 로직 (실제 구현 시 데이터베이스 저장)
-        return "redirect:/grade/admin/subject-rules/list";
-    }
+    
 
     // 과목별 규정 목록 (검색/페이징)
     @GetMapping("/admin/subject-rules/list")
@@ -131,9 +76,23 @@ public class GradeController {
                                    @RequestParam(required = false) String searchKeyword,
                                    @ModelAttribute PageRequestDTO req,
                                    Model model) {
-        // 간단한 목록 조회 로직
+        // 과목별 규정 상태 조회
+        PageResponseDTO<Map<String, Object>> result = 
+                gradeService.listSubjectRulesStatus(searchType, searchKeyword, req);
+        
+        // 글로벌 규정 조회
+        Map<String, Double> globalRules = gradeService.getGlobalRulesMap();
+        
         model.addAttribute("req", req);
-        model.addAttribute("result", null); // 실제로는 PageResponseDTO 반환
+        model.addAttribute("result", result);
+        model.addAttribute("globalRules", globalRules);
+        
+        // 검색 파라미터 유지
+        Map<String, Object> keep = new HashMap<>();
+        if (searchType != null && !searchType.isBlank()) keep.put("searchType", searchType);
+        if (searchKeyword != null && !searchKeyword.isBlank()) keep.put("searchKeyword", searchKeyword);
+        model.addAttribute("keepParams", keep);
+        
         return "grade/admin/subject-rules-list";
     }
 
@@ -162,47 +121,6 @@ public class GradeController {
         return "grade/admin/alphabet-list";
     }
 
-    // 추가 폼
-    @GetMapping("/admin/rule/subject/add")
-    public String adminRuleSubjectAddForm(@RequestParam(required = false) Long courseId,
-                                          Model model) {
-        AlphabetSystem as = new AlphabetSystem();
-        as.setCourseId(courseId);
-        model.addAttribute("as", as);
-        model.addAttribute("action", "/grade/admin/rule/subject/add");
-        return "grade/admin/alphabet-form";
-    }
-
-    // 추가 처리
-    @PostMapping("/admin/rule/subject/add")
-    public String adminRuleSubjectAdd(@ModelAttribute AlphabetSystem as) {
-        gradeService.addAlphabetRule(as);
-        String redirect = "/grade/admin/rule/subject";
-        redirect += (as.getCourseId() != null ? "?courseId=" + as.getCourseId() : "");
-        return "redirect:" + redirect;
-    }
-
-    // 수정 폼
-    @GetMapping("/admin/rule/subject/edit")
-    public String adminRuleSubjectEditForm(@RequestParam Long id,
-                                           @RequestParam(required = false) Long courseId,
-                                           Model model) {
-        AlphabetSystem as = new AlphabetSystem();
-        as.setId(id);
-        as.setCourseId(courseId);
-        model.addAttribute("as", as);
-        model.addAttribute("action", "/grade/admin/rule/subject/edit");
-        return "grade/admin/alphabet-form";
-    }
-
-    // 수정 처리
-    @PostMapping("/admin/rule/subject/edit")
-    public String adminRuleSubjectEdit(@ModelAttribute AlphabetSystem as) {
-        gradeService.updateAlphabetRule(as);
-        String redirect = "/grade/admin/rule/subject";
-        redirect += (as.getCourseId() != null ? "?courseId=" + as.getCourseId() : "");
-        return "redirect:" + redirect;
-    }
 
     // 삭제
     @PostMapping("/admin/rule/subject/delete")
@@ -323,7 +241,7 @@ public class GradeController {
 
     }
 
-    // 등록 처리
+    // 등록 처리 (폼 제출용)
     @PostMapping("/professor/add")
     public String professorGradeAdd(@ModelAttribute Grade grade,
                                     @RequestParam(required = false) Long professorId,
@@ -402,6 +320,33 @@ public class GradeController {
         } catch (Exception e) {
             model.addAttribute("error", "과목별 규정을 불러오는 중 오류가 발생했습니다: " + e.getMessage());
             return "grade/professor/subject-rules-view";
+        }
+    }
+
+    /*================================REST API (AJAX용)================================*/
+    // AJAX 성적 등록
+    @PostMapping("/professor/add-ajax")
+    @ResponseBody
+    public String professorGradeAddAjax(@RequestParam Long enrollmentId,
+                                       @RequestParam Long courseId,
+                                       @RequestParam Long subjectId,
+                                       @RequestParam Integer midExam,
+                                       @RequestParam Integer finalExam,
+                                       @RequestParam Integer assignment,
+                                       @RequestParam Integer attendance) {
+        try {
+            Grade grade = new Grade();
+            grade.setEnrollmentId(enrollmentId);
+            grade.setMidExam(midExam);
+            grade.setFinalExam(finalExam);
+            grade.setAssignment(assignment);
+            grade.setAttendance(attendance);
+            
+            gradeService.addGrade(grade, null);
+            return "success";
+        } catch (Exception e) {
+            log.error("성적 저장 중 오류 발생", e);
+            return "error: " + e.getMessage();
         }
     }
 

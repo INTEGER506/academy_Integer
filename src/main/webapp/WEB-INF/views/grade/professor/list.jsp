@@ -123,32 +123,6 @@
         </div>
     </div>
 
-<!-- 디버그 정보 -->
-<div style="background-color: #f0f0f0; padding: 10px; margin: 10px 0; border: 1px solid #ccc;">
-    <h4>🔍 디버그 정보</h4>
-    <p><strong>professorId:</strong> ${professorId}</p>
-    <p><strong>courseId:</strong> ${param.courseId}</p>
-    <p><strong>subjectId:</strong> ${param.subjectId}</p>
-    <p><strong>result.data size:</strong> ${result.data.size()}</p>
-    <p><strong>result.totalCount:</strong> ${result.totalCount}</p>
-    
-    <!-- 규정 정보 디버그 -->
-    <hr>
-    <h5>📊 규정 정보 디버그</h5>
-    <p><strong>gradeSystem:</strong> ${gradeSystem}</p>
-    <p><strong>globalRules size:</strong> ${globalRules.size()}</p>
-    <p><strong>subjectRules size:</strong> ${subjectRules.size()}</p>
-    <c:if test="${not empty globalRules}">
-        <p><strong>첫 번째 글로벌 규정:</strong> ${globalRules[0]}</p>
-    </c:if>
-    <c:if test="${not empty subjectRules}">
-        <p><strong>첫 번째 과목별 규정:</strong> ${subjectRules[0]}</p>
-    </c:if>
-    
-    <c:if test="${not empty result.data}">
-        <p><strong>첫 번째 성적:</strong> ${result.data[0]}</p>
-    </c:if>
-</div>
 
 <jsp:include page="/WEB-INF/views/common/searchBar.jsp">
     <jsp:param name="formAction"      value="${pageContext.request.contextPath}/grade/professor/list"/>
@@ -267,8 +241,18 @@
                     </c:when>
                     <c:otherwise>
                         <!-- 성적이 없는 경우: 등록 버튼 -->
-                        <button class="btn-save" onclick="saveGrade(${g.enrollmentId})" style="background: #28a745; color: white; border: none; padding: 4px 8px; border-radius: 3px; margin-right: 5px;">저장</button>
-                        <button class="btn-preview" onclick="previewGrade(${g.enrollmentId})" style="background: #17a2b8; color: white; border: none; padding: 4px 8px; border-radius: 3px;">미리보기</button>
+                        <form method="post" action="${pageContext.request.contextPath}/grade/professor/add" style="display: inline;">
+                            <input type="hidden" name="enrollmentId" value="${g.enrollmentId}">
+                            <input type="hidden" name="courseId" value="${param.courseId}">
+                            <input type="hidden" name="subjectId" value="${param.subjectId}">
+                            <input type="hidden" name="professorId" value="${professorId}">
+                            <input type="hidden" name="midExam" id="midExam_${g.enrollmentId}">
+                            <input type="hidden" name="finalExam" id="finalExam_${g.enrollmentId}">
+                            <input type="hidden" name="assignment" id="assignment_${g.enrollmentId}">
+                            <input type="hidden" name="attendance" id="attendance_${g.enrollmentId}">
+                            <button type="button" class="btn-save" onclick="submitGradeForm('${g.enrollmentId}')" style="background: #28a745; color: white; border: none; padding: 4px 8px; border-radius: 3px; margin-right: 5px;">저장</button>
+                        </form>
+                        <button class="btn-preview" onclick="previewGrade('${g.enrollmentId}')" style="background: #17a2b8; color: white; border: none; padding: 4px 8px; border-radius: 3px;">미리보기</button>
                     </c:otherwise>
                 </c:choose>
             </td>
@@ -314,10 +298,16 @@ function validateScore(score, fieldName) {
 
 // 성적 미리보기 계산
 function calculateGrade(enrollmentId) {
-    const midExamInput = document.querySelector(`input[data-enrollment="${enrollmentId}"][data-type="midExam"]`);
-    const finalExamInput = document.querySelector(`input[data-enrollment="${enrollmentId}"][data-type="finalExam"]`);
-    const assignmentInput = document.querySelector(`input[data-enrollment="${enrollmentId}"][data-type="assignment"]`);
-    const attendanceInput = document.querySelector(`input[data-enrollment="${enrollmentId}"][data-type="attendance"]`);
+    const enrollmentIdStr = String(enrollmentId);
+    const midExamInput = document.querySelector(`input[data-enrollment="${enrollmentIdStr}"][data-type="midExam"]`);
+    const finalExamInput = document.querySelector(`input[data-enrollment="${enrollmentIdStr}"][data-type="finalExam"]`);
+    const assignmentInput = document.querySelector(`input[data-enrollment="${enrollmentIdStr}"][data-type="assignment"]`);
+    const attendanceInput = document.querySelector(`input[data-enrollment="${enrollmentIdStr}"][data-type="attendance"]`);
+    
+    // 입력 필드가 없으면 기본값 반환
+    if (!midExamInput || !finalExamInput || !assignmentInput || !attendanceInput) {
+        return {totalScore: 0, alphabet: 'F', gpa: 0.0};
+    }
     
     const midExam = parseFloat(midExamInput.value) || 0;
     const finalExam = parseFloat(finalExamInput.value) || 0;
@@ -364,15 +354,18 @@ function getGpaFromAlphabet(alphabet) {
 function updatePreview(enrollmentId) {
     const result = calculateGrade(enrollmentId);
     
-    document.querySelector(`span[data-enrollment="${enrollmentId}"].total-score`).textContent = result.totalScore;
-    document.querySelector(`span[data-enrollment="${enrollmentId}"].alphabet-grade`).textContent = result.alphabet;
-    document.querySelector(`span[data-enrollment="${enrollmentId}"].gpa-score`).textContent = result.gpa;
+    const enrollmentIdStr = String(enrollmentId);
+    const totalScoreElement = document.querySelector(`span[data-enrollment="${enrollmentIdStr}"].total-score`);
+    const alphabetGradeElement = document.querySelector(`span[data-enrollment="${enrollmentIdStr}"].alphabet-grade`);
+    const gpaScoreElement = document.querySelector(`span[data-enrollment="${enrollmentIdStr}"].gpa-score`);
+    
+    if (totalScoreElement) totalScoreElement.textContent = result.totalScore;
+    if (alphabetGradeElement) alphabetGradeElement.textContent = result.alphabet;
+    if (gpaScoreElement) gpaScoreElement.textContent = result.gpa;
 }
 
 // 성적 미리보기 버튼
 function previewGrade(enrollmentId) {
-    console.log('previewGrade 호출됨:', enrollmentId);
-    
     // 먼저 화면 업데이트
     updatePreview(enrollmentId);
     
@@ -381,17 +374,92 @@ function previewGrade(enrollmentId) {
     alert('성적 미리보기:\n총점: ' + result.totalScore + '점\n학점: ' + result.alphabet + '\nGPA: ' + result.gpa);
 }
 
-// 성적 저장
-function saveGrade(enrollmentId) {
-    console.log('saveGrade 호출됨:', enrollmentId);
+// 폼 제출 방식으로 성적 저장
+function submitGradeForm(enrollmentId) {
+    console.log('=== submitGradeForm 디버그 시작 ===');
+    console.log('enrollmentId:', enrollmentId, '타입:', typeof enrollmentId);
     
-    const midExamInput = document.querySelector(`input[data-enrollment="${enrollmentId}"][data-type="midExam"]`);
-    const finalExamInput = document.querySelector(`input[data-enrollment="${enrollmentId}"][data-type="finalExam"]`);
-    const assignmentInput = document.querySelector(`input[data-enrollment="${enrollmentId}"][data-type="assignment"]`);
-    const attendanceInput = document.querySelector(`input[data-enrollment="${enrollmentId}"][data-type="attendance"]`);
+    // 모든 입력 필드 확인
+    const allInputs = document.querySelectorAll('input[data-enrollment]');
+    console.log('페이지의 모든 data-enrollment 입력 필드들:');
+    allInputs.forEach((input, index) => {
+        console.log(`${index}: data-enrollment="${input.getAttribute('data-enrollment')}", data-type="${input.getAttribute('data-type')}"`);
+    });
     
+    // 입력 필드에서 값 가져오기 (문자열로 변환하여 검색)
+    const enrollmentIdStr = String(enrollmentId);
+    console.log('검색할 enrollmentIdStr:', enrollmentIdStr);
+    
+    const midExamInput = document.querySelector(`input[data-enrollment="${enrollmentIdStr}"][data-type="midExam"]`);
+    const finalExamInput = document.querySelector(`input[data-enrollment="${enrollmentIdStr}"][data-type="finalExam"]`);
+    const assignmentInput = document.querySelector(`input[data-enrollment="${enrollmentIdStr}"][data-type="assignment"]`);
+    const attendanceInput = document.querySelector(`input[data-enrollment="${enrollmentIdStr}"][data-type="attendance"]`);
+    
+    console.log('입력 필드들:', {midExamInput, finalExamInput, assignmentInput, attendanceInput});
+    
+    // 입력 필드가 없으면 오류
     if (!midExamInput || !finalExamInput || !assignmentInput || !attendanceInput) {
-        alert('입력 필드를 찾을 수 없습니다.');
+        alert('입력 필드를 찾을 수 없습니다. 페이지를 새로고침해주세요.');
+        return;
+    }
+    
+    // 값 검증
+    const midExam = midExamInput.value;
+    const finalExam = finalExamInput.value;
+    const assignment = assignmentInput.value;
+    const attendance = attendanceInput.value;
+    
+    if (!midExam || !finalExam || !assignment || !attendance) {
+        alert('모든 점수를 입력해주세요.');
+        return;
+    }
+    
+    // 숨겨진 필드에 값 설정
+    document.getElementById(`midExam_${enrollmentId}`).value = midExam;
+    document.getElementById(`finalExam_${enrollmentId}`).value = finalExam;
+    document.getElementById(`assignment_${enrollmentId}`).value = assignment;
+    document.getElementById(`attendance_${enrollmentId}`).value = attendance;
+    
+    // 폼 제출
+    const form = document.querySelector(`form input[name="enrollmentId"][value="${enrollmentId}"]`).closest('form');
+    form.submit();
+}
+
+// 성적 저장 (기존 AJAX 방식 - 사용하지 않음)
+function saveGrade(enrollmentId) {
+    console.log('=== saveGrade 디버그 시작 ===');
+    console.log('전달받은 enrollmentId:', enrollmentId);
+    console.log('enrollmentId 타입:', typeof enrollmentId);
+    
+    // 페이지의 모든 입력 필드 확인
+    const allInputs = document.querySelectorAll('input[data-enrollment]');
+    console.log('페이지의 모든 입력 필드 개수:', allInputs.length);
+    allInputs.forEach((input, index) => {
+        console.log(`입력 필드 ${index + 1}:`, {
+            element: input,
+            dataEnrollment: input.getAttribute('data-enrollment'),
+            dataType: input.getAttribute('data-type'),
+            value: input.value
+        });
+    });
+    
+    // 입력 필드에서 값 가져오기 (문자열로 변환하여 검색)
+    const enrollmentIdStr = String(enrollmentId);
+    const midExamInput = document.querySelector(`input[data-enrollment="${enrollmentIdStr}"][data-type="midExam"]`);
+    const finalExamInput = document.querySelector(`input[data-enrollment="${enrollmentIdStr}"][data-type="finalExam"]`);
+    const assignmentInput = document.querySelector(`input[data-enrollment="${enrollmentIdStr}"][data-type="assignment"]`);
+    const attendanceInput = document.querySelector(`input[data-enrollment="${enrollmentIdStr}"][data-type="attendance"]`);
+    
+    console.log('검색된 입력 필드들:');
+    console.log('midExamInput:', midExamInput);
+    console.log('finalExamInput:', finalExamInput);
+    console.log('assignmentInput:', assignmentInput);
+    console.log('attendanceInput:', attendanceInput);
+    
+    // 입력 필드가 없으면 오류
+    if (!midExamInput || !finalExamInput || !assignmentInput || !attendanceInput) {
+        console.error('입력 필드를 찾을 수 없습니다!');
+        alert('입력 필드를 찾을 수 없습니다. enrollmentId: ' + enrollmentId + '\n페이지를 새로고침해주세요.');
         return;
     }
     
@@ -427,16 +495,17 @@ function saveGrade(enrollmentId) {
         formData.append('assignment', assignmentNum);
         formData.append('attendance', attendanceNum);
         
-        fetch('${pageContext.request.contextPath}/grade/professor/add', {
+        fetch('${pageContext.request.contextPath}/grade/professor/add-ajax', {
             method: 'POST',
             body: formData
         })
-        .then(response => {
-            if (response.ok) {
+        .then(response => response.text())
+        .then(data => {
+            if (data === 'success') {
                 alert('성적이 저장되었습니다.');
                 location.reload(); // 페이지 새로고침
             } else {
-                alert('성적 저장에 실패했습니다.');
+                alert('성적 저장에 실패했습니다: ' + data);
             }
         })
         .catch(error => {
@@ -546,12 +615,22 @@ function deleteGrade(gradeId) {
 
 // 입력 필드 변경 시 실시간 미리보기
 document.addEventListener('DOMContentLoaded', function() {
+    // 기존 이벤트 리스너 제거 후 재등록
     const inputs = document.querySelectorAll('.grade-input');
-    inputs.forEach(input => {
+    
+    inputs.forEach((input) => {
         input.addEventListener('input', function() {
             const enrollmentId = this.getAttribute('data-enrollment');
             updatePreview(enrollmentId);
         });
+    });
+    
+    // 동적으로 추가되는 입력 필드를 위한 이벤트 위임
+    document.addEventListener('input', function(event) {
+        if (event.target.classList.contains('grade-input')) {
+            const enrollmentId = event.target.getAttribute('data-enrollment');
+            updatePreview(enrollmentId);
+        }
     });
 });
 </script>

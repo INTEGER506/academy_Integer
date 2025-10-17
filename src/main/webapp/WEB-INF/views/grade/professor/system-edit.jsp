@@ -165,25 +165,25 @@
     <div style="margin-bottom: 20px;">
         <label style="display: block; margin-bottom: 5px;">중간고사 비율 (%)</label>
         <input type="number" name="midExamRatio" min="0" max="100" step="1" 
-               value="${gs.midExamRatio}" required style="width: 100px;"/>
+               value="${gs.midExamRatio != null ? gs.midExamRatio : 30}" required style="width: 100px;"/>
     </div>
     
     <div style="margin-bottom: 20px;">
         <label style="display: block; margin-bottom: 5px;">기말고사 비율 (%)</label>
         <input type="number" name="finalExamRatio" min="0" max="100" step="1" 
-               value="${gs.finalExamRatio}" required style="width: 100px;"/>
+               value="${gs.finalExamRatio != null ? gs.finalExamRatio : 40}" required style="width: 100px;"/>
     </div>
     
     <div style="margin-bottom: 20px;">
         <label style="display: block; margin-bottom: 5px;">과제 비율 (%)</label>
         <input type="number" name="assignmentRatio" min="0" max="100" step="1" 
-               value="${gs.assignmentRatio}" required style="width: 100px;"/>
+               value="${gs.assignmentRatio != null ? gs.assignmentRatio : 20}" required style="width: 100px;"/>
     </div>
     
     <div style="margin-bottom: 20px;">
         <label style="display: block; margin-bottom: 5px;">출석 비율 (%)</label>
         <input type="number" name="attendanceRatio" min="0" max="100" step="1" 
-               value="${gs.attendanceRatio}" required style="width: 100px;"/>
+               value="${gs.attendanceRatio != null ? gs.attendanceRatio : 10}" required style="width: 100px;"/>
     </div>
 
     <!-- 총합 표시 및 검증 -->
