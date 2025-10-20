@@ -1,15 +1,15 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
-<h2>글로벌 성적 규정</h2>
-<p>학교 전체에 적용되는 기본 성적 분배 비율입니다.</p>
+    <h2>글로벌 성적 규정</h2>
+    <p>학교 전체에 적용되는 기본 성적 분배 비율입니다. (상위 누적 비율)</p>
 
 <div style="max-width: 400px; margin: 20px auto;">
     <table style="width: 100%; border-collapse: collapse; border: 1px solid #dee2e6; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
         <thead>
         <tr style="background-color: #007bff; color: white;">
             <th style="padding: 15px; text-align: center; border-bottom: 1px solid #dee2e6;">학점</th>
-            <th style="padding: 15px; text-align: center; border-bottom: 1px solid #dee2e6;">비율 (%)</th>
+            <th style="padding: 15px; text-align: center; border-bottom: 1px solid #dee2e6;">상위 누적 비율 (%)</th>
         </tr>
         </thead>
         <tbody>
@@ -128,6 +128,14 @@
                 onmouseout="this.style.backgroundColor='#007bff'">
             ✏️ 전체 규정 설정
         </button>
+        <form method="post" action="${pageContext.request.contextPath}/grade/admin/rule/global/init" style="display: inline-block;">
+            <button type="submit" 
+                    style="display: inline-block; background-color: #ffc107; color: black; padding: 12px 24px; border: none; border-radius: 6px; margin: 0 10px; font-weight: bold; box-shadow: 0 2px 4px rgba(255,193,7,0.3); cursor: pointer;"
+                    onmouseover="this.style.backgroundColor='#e0a800'" 
+                    onmouseout="this.style.backgroundColor='#ffc107'">
+                🔄 기본 규정 초기화
+            </button>
+        </form>
         <a href="${pageContext.request.contextPath}/grade/admin/subject-rules/list" 
            style="display: inline-block; background-color: #28a745; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 0 10px; font-weight: bold; box-shadow: 0 2px 4px rgba(40,167,69,0.3); transition: background-color 0.3s;"
            onmouseover="this.style.backgroundColor='#1e7e34'" 
@@ -136,10 +144,9 @@
         </a>
     </div>
     
-    <!-- 총합 표시 -->
+    <!-- 검증 메시지 표시 -->
     <div id="totalDisplay" style="margin-top: 15px; padding: 10px; background-color: #f8f9fa; border-radius: 5px; display: none;">
-        <strong>총합: <span id="totalSum">0</span>%</strong>
-        <span id="validationMessage" style="margin-left: 10px;"></span>
+        <span id="validationMessage"></span>
     </div>
 </div>
 
@@ -158,18 +165,18 @@ function startEdit() {
     document.querySelectorAll('.display-mode').forEach(span => span.style.display = 'none');
     document.querySelectorAll('.edit-mode').forEach(input => input.style.display = 'inline-block');
     
-    // 버튼 전환
-    document.getElementById('viewButtons').style.display = 'none';
-    document.getElementById('editButtons').style.display = 'block';
-    document.getElementById('totalDisplay').style.display = 'block';
-    
-    // 총합 계산
-    calculateTotal();
-    
-    // 모든 입력 필드에 이벤트 리스너 추가
-    document.querySelectorAll('.edit-mode').forEach(input => {
-        input.addEventListener('input', calculateTotal);
-    });
+           // 버튼 전환
+           document.getElementById('viewButtons').style.display = 'none';
+           document.getElementById('editButtons').style.display = 'block';
+           document.getElementById('totalDisplay').style.display = 'block';
+           
+           // 상위 누적 비율 순서 검증
+           validateGradeOrder();
+           
+           // 모든 입력 필드에 이벤트 리스너 추가
+           document.querySelectorAll('.edit-mode').forEach(input => {
+               input.addEventListener('input', validateGradeOrder);
+           });
 }
 
 // 편집 취소
@@ -189,56 +196,90 @@ function cancelEdit() {
     document.getElementById('totalDisplay').style.display = 'none';
 }
 
-// 총합 계산
-function calculateTotal() {
-    let total = 0;
-    document.querySelectorAll('.edit-mode').forEach(input => {
-        total += Number(input.value || 0);
-    });
-    
-    document.getElementById('totalSum').textContent = total;
-    
-    const validationMessage = document.getElementById('validationMessage');
-    const saveBtn = document.querySelector('button[onclick="saveChanges()"]');
-    
-    if (total === 100) {
-        validationMessage.textContent = '✓ 정상';
-        validationMessage.style.color = 'green';
-        saveBtn.disabled = false;
-        saveBtn.style.backgroundColor = '#28a745';
-    } else {
-        validationMessage.textContent = '✗ 총합이 100%가 아닙니다';
-        validationMessage.style.color = 'red';
-        saveBtn.disabled = true;
-        saveBtn.style.backgroundColor = '#dc3545';
-    }
-}
+       // 상위 누적 비율 순서 검증
+       function validateGradeOrder() {
+           let isValidOrder = true;
+           let orderErrorMessage = '';
+           
+           // 상위 누적 비율 검증을 위한 배열
+           const gradeOrder = ['A+', 'A', 'B+', 'B', 'C+', 'C', 'D'];
+           const values = {};
+           
+           document.querySelectorAll('.edit-mode').forEach(input => {
+               const value = Number(input.value || 0);
+               const grade = input.name.replace('boundary_', '');
+               values[grade] = value;
+           });
+           
+           // 상위 누적 비율 순서 검증 (A+ < A < B+ < B < C+ < C < D)
+           for (let i = 0; i < gradeOrder.length - 1; i++) {
+               const currentGrade = gradeOrder[i];
+               const nextGrade = gradeOrder[i + 1];
+               
+               if (values[currentGrade] && values[nextGrade] && values[currentGrade] >= values[nextGrade]) {
+                   isValidOrder = false;
+                   orderErrorMessage = `${currentGrade}(${values[currentGrade]}%)는 ${nextGrade}(${values[nextGrade]}%)보다 작아야 합니다`;
+                   break;
+               }
+           }
+           
+           const validationMessage = document.getElementById('validationMessage');
+           const saveBtn = document.querySelector('button[onclick="saveChanges()"]');
+           
+           if (isValidOrder) {
+               validationMessage.textContent = '✓ 정상';
+               validationMessage.style.color = 'green';
+               saveBtn.disabled = false;
+               saveBtn.style.backgroundColor = '#28a745';
+           } else {
+               validationMessage.textContent = '✗ ' + orderErrorMessage;
+               validationMessage.style.color = 'red';
+               saveBtn.disabled = true;
+               saveBtn.style.backgroundColor = '#dc3545';
+           }
+       }
 
 // 변경사항 저장
 function saveChanges() {
-    const total = Number(document.getElementById('totalSum').textContent);
-    if (total !== 100) {
-        alert('총합이 100%가 되어야 합니다. 현재: ' + total + '%');
-        return;
-    }
-    
-    // 클라이언트 사이드 검증 추가
+    // 상위 누적 비율 순서 검증
     let hasError = false;
     let errorMessage = '';
     
+    // 상위 누적 비율 검증을 위한 배열
+    const gradeOrder = ['A+', 'A', 'B+', 'B', 'C+', 'C', 'D'];
+    const values = {};
+    
     document.querySelectorAll('.edit-mode').forEach(input => {
         const value = parseFloat(input.value);
+        const grade = input.name.replace('boundary_', '');
+        
         if (isNaN(value)) {
             hasError = true;
-            errorMessage += '유효하지 않은 값이 있습니다: ' + input.name + '\n';
+            errorMessage += '유효하지 않은 값이 있습니다: ' + grade + '\n';
         } else if (value < 0) {
             hasError = true;
-            errorMessage += '음수 값은 허용되지 않습니다: ' + input.name + ' = ' + value + '%\n';
+            errorMessage += '음수 값은 허용되지 않습니다: ' + grade + ' = ' + value + '%\n';
         } else if (value > 100) {
             hasError = true;
-            errorMessage += '100%를 초과할 수 없습니다: ' + input.name + ' = ' + value + '%\n';
+            errorMessage += '100%를 초과할 수 없습니다: ' + grade + ' = ' + value + '%\n';
         }
+        
+        values[grade] = value;
     });
+    
+    // 상위 누적 비율 순서 검증 (A+ < A < B+ < B < C+ < C < D)
+    if (!hasError) {
+        for (let i = 0; i < gradeOrder.length - 1; i++) {
+            const currentGrade = gradeOrder[i];
+            const nextGrade = gradeOrder[i + 1];
+            
+            if (values[currentGrade] && values[nextGrade] && values[currentGrade] >= values[nextGrade]) {
+                hasError = true;
+                errorMessage = `${currentGrade}(${values[currentGrade]}%)는 ${nextGrade}(${values[nextGrade]}%)보다 작아야 합니다`;
+                break;
+            }
+        }
+    }
     
     if (hasError) {
         alert('입력 오류:\n' + errorMessage);

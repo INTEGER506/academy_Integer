@@ -1,5 +1,6 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
 <!DOCTYPE html>
 <html>
@@ -84,74 +85,64 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <h2>점수 분배 비율 설정</h2>
-        
-        <!-- 현재 과목 규정 표시 -->
-        <div class="rule-section">
-            <h3 style="margin-top: 0; color: #1976d2;">📊 현재 과목 성적 규정</h3>
-            
-            <c:if test="${ruleError != null}">
-                <div class="error-message">
-                    <strong>❌ 오류:</strong> ${ruleError}
+        <div class="container">
+            <h2>점수 분배 비율 설정</h2>
+            <c:if test="${subjectName != null}">
+                <div style="background-color: #e3f2fd; border: 1px solid #2196f3; border-radius: 4px; padding: 15px; margin-bottom: 20px;">
+                    <h3 style="margin-top: 0; color: #1976d2;">📚 과목: ${subjectName}</h3>
+                    <p style="margin-bottom: 10px; color: #666;">이 과목의 점수 분배 비율을 설정합니다.</p>
+                    
+                    <!-- 현재 GradeSystem 정보 표시 -->
+                    <c:if test="${gs != null && gs.id != null}">
+                        <div style="background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px; padding: 12px; margin-top: 10px;">
+                            <h4 style="margin-top: 0; margin-bottom: 8px; color: #495057; font-size: 14px;">📊 현재 설정된 비율</h4>
+                            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                                <span style="color: #28a745; font-weight: bold;">중간고사: ${gs.midExamRatio.intValue()}%</span>
+                                <span style="color: #007bff; font-weight: bold;">기말고사: ${gs.finalExamRatio.intValue()}%</span>
+                                <span style="color: #ffc107; font-weight: bold;">과제: ${gs.assignmentRatio.intValue()}%</span>
+                                <span style="color: #6c757d; font-weight: bold;">출석: ${gs.attendanceRatio.intValue()}%</span>
+                            </div>
+                        </div>
+                    </c:if>
+                    <c:if test="${gs == null || gs.id == null}">
+                        <div style="background-color: #fff3cd; border: 1px solid #ffeaa7; border-radius: 4px; padding: 12px; margin-top: 10px;">
+                            <h4 style="margin-top: 0; margin-bottom: 8px; color: #856404; font-size: 14px;">⚠️ 아직 설정되지 않음</h4>
+                            <p style="margin-bottom: 0; color: #856404; font-size: 13px;">이 과목의 점수 분배 비율이 아직 설정되지 않았습니다. 아래에서 설정해주세요.</p>
+                        </div>
+                    </c:if>
                 </div>
             </c:if>
+        
+        <!-- 현재 과목 성적 규정 표시 -->
+        <div class="rule-section">
+            <h3 style="margin-top: 0; color: #1976d2;">📊 현재 과목 성적 규정 (상위 누적 비율)</h3>
+            <p style="color: #666; margin-bottom: 20px;">이 과목에 적용되는 학점 규정입니다. 커스텀 규정이 없으면 글로벌 규정이 적용됩니다.</p>
             
-            <c:if test="${subjectRule != null}">
-                <p><strong>과목:</strong> ${subjectRule.subjectName}</p>
-                <table class="rule-table">
-                    <thead>
+            <table class="rule-table">
+                <thead>
+                    <tr>
+                        <th>등급</th>
+                        <th>상위 누적 비율 (%)</th>
+                        <th>설명</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <c:set var="rulesToDisplay" value="${subjectRules != null && not empty subjectRules ? subjectRules : globalRules}"/>
+                    <c:if test="${empty rulesToDisplay}">
                         <tr>
-                            <th>과목 이름</th>
-                            <th>A+</th>
-                            <th>A</th>
-                            <th>B+</th>
-                            <th>B</th>
-                            <th>C+</th>
-                            <th>C</th>
-                            <th>D+</th>
-                            <th>D</th>
-                            <th>F</th>
+                            <td colspan="3">규정 정보가 없습니다.</td>
                         </tr>
-                    </thead>
-                    <tbody>
+                    </c:if>
+                    <c:forEach var="rule" items="${rulesToDisplay}">
                         <tr>
-                            <td>퍼센트</td>
-                            <c:forEach var="entry" items="${subjectRule.percentages}">
-                                <td>${entry.value}%</td>
-                            </c:forEach>
+                            <td class="grade-label">${rule.alphabet}</td>
+                            <td class="boundary-value"><fmt:formatNumber value="${rule.boundary}" pattern="0"/>%</td>
+                            <td>${rule.description}</td>
                         </tr>
-                    </tbody>
-                </table>
-            </c:if>
-            
-            <c:if test="${subjectRule == null && globalRules != null}">
-                <p><strong>과목:</strong> 글로벌 규정 적용</p>
-                <table class="rule-table">
-                    <thead>
-                        <tr>
-                            <th>과목 이름</th>
-                            <th>A+</th>
-                            <th>A</th>
-                            <th>B+</th>
-                            <th>B</th>
-                            <th>C+</th>
-                            <th>C</th>
-                            <th>D+</th>
-                            <th>D</th>
-                            <th>F</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>퍼센트</td>
-                            <c:forEach var="rule" items="${globalRules}">
-                                <td>${rule.boundary}%</td>
-                            </c:forEach>
-                        </tr>
-                    </tbody>
-                </table>
-            </c:if>
+                    </c:forEach>
+                </tbody>
+            </table>
+            <p style="margin-top: 15px; font-size: 0.9em; color: #666;">총점 30점 이하인 경우 자동으로 F 학점이 부여됩니다.</p>
         </div>
 
         <!-- 점수 비율 설정 폼 -->
@@ -160,7 +151,9 @@
 
 <form method="post" action="${pageContext.request.contextPath}/grade/professor/system/edit">
     <input type="hidden" name="id" value="${gs.id}"/>
-    <input type="hidden" name="courseId" value="${gs.courseId}"/>
+    <input type="hidden" name="courseId" value="${param.courseId != null ? param.courseId : gs.courseId}"/>
+    <input type="hidden" name="subjectId" value="${param.subjectId}"/>
+    <input type="hidden" name="professorId" value="${professorId}"/>
 
     <div style="margin-bottom: 20px;">
         <label style="display: block; margin-bottom: 5px;">중간고사 비율 (%)</label>
@@ -194,7 +187,7 @@
 
             <div style="margin-top: 20px;">
                 <button type="submit" id="submitBtn" class="btn" disabled>저장</button>
-                <a href="${pageContext.request.contextPath}/grade/professor/system-list?courseId=${gs.courseId}" 
+                <a href="${pageContext.request.contextPath}/grade/professor/system-list?professorId=${professorId}" 
                    class="btn btn-secondary">목록으로</a>
             </div>
         </form>

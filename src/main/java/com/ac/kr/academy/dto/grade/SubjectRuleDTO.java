@@ -7,5 +7,5 @@ import java.util.Map;
 public class SubjectRuleDTO {
     private Long subjectId;
     private String subjectName;
-    private Map<String, Double> percentages; // A+, A, B+, B, C+, C, D+, D, F
+    private Map<String, Double> percentages; // A+, A, B+, B, C+, C, D, F
 }

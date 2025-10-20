@@ -46,14 +46,22 @@ public interface GradeMapper {
             @Param("enrollmentId") Long enrollmentId
     );
 
-    // 글로벌 규정 전체 (경계값 내림차순) — 계산용
-    List<AlphabetSystem> listAlphabetGlobalAll();
 
     // (선택) 수강ID로 코스ID 조회가 필요하면
     Long findCourseIdByEnrollment(@Param("enrollmentId") Long enrollmentId);
 
-    // 글로벌 규정 추가 (subject_id = Null)
-    int insertAlphabetGlobal(AlphabetSystem rule);
+    // (선택) 수강ID로 학생ID 조회
+    Long findStudentIdByEnrollment(@Param("enrollmentId") Long enrollmentId);
+    
+    // (선택) 수강ID로 과목ID 조회
+    Long findSubjectIdByEnrollment(@Param("enrollmentId") Long enrollmentId);
+    
+    // (선택) 강의ID로 과목ID 조회
+    Long findSubjectIdByCourse(@Param("courseId") Long courseId);
+    
+    // 강의의 모든 성적 조회
+    List<Grade> findAllGradesByCourse(@Param("courseId") Long courseId);
+
 
     // 과목 규정 추가 (subject_id = #{subjectId})
     int insertAlphabetBySubject(AlphabetSystem rule);
@@ -64,8 +72,6 @@ public interface GradeMapper {
     // 규정 삭제 (id 기준)
     int deleteAlphabetRule(@Param("id") Long id);
 
-    // 모든 글로벌 규정 삭제
-    int deleteAllGlobalRules();
 
     // 특정 과목의 모든 규정 삭제
     int deleteAlphabetBySubject(@Param("subjectId") Long subjectId);
@@ -106,6 +112,8 @@ public interface GradeMapper {
 
     // 점수 분배 비율 수정
     int updateGradeSystem(GradeSystem system);
+    
+    GradeSystem getGradeSystemById(Long id);
 
     // 특정 수업(course) 성적 총 건수
     long countByCourse(@Param("professorId") Long professorId,
@@ -140,17 +148,7 @@ public interface GradeMapper {
                                 @Param("professorId") Long professorId);
 
     /*==================================학생================================*/
-    // 학생 성적 총 건수
-    long countMyGrade(@Param("studentId") Long studentId,
-                      @Param("searchType") String searchType,
-                      @Param("searchKeyword") String searchKeyword);
 
-    // 성적 조회
-    List<Grade> findMyGrade(@Param("studentId") Long studentId,
-                            @Param("searchType") String searchType,
-                            @Param("searchKeyword") String searchKeyword,
-                            @Param("start") int start,
-                            @Param("end") int end);
 
     // 성적 단건 조회
     List<Grade> findMyGradeById(@Param("id") Long id,
@@ -160,9 +158,34 @@ public interface GradeMapper {
     Long sumScoreByStudent(@Param("studentId") Long studentId);
     Long avgGpa10ByStudent(@Param("studentId") Long studentId);
 
+    // 학생 수강신청 목록 총 건수 (성적 등록 여부 포함)
+    long countMyEnrollmentsWithGrades(@Param("studentId") Long studentId,
+                                     @Param("searchType") String searchType,
+                                     @Param("searchKeyword") String searchKeyword);
+
+    // 학생 수강신청 목록 조회 (성적 등록 여부 포함)
+    List<Map<String, Object>> findMyEnrollmentsWithGrades(@Param("studentId") Long studentId,
+                                                          @Param("searchType") String searchType,
+                                                          @Param("searchKeyword") String searchKeyword,
+                                                          @Param("start") int start,
+                                                          @Param("end") int end);
+
+    // 학기별 성적 조회 (1~8학기)
+    List<Map<String, Object>> findMyGradesBySemester(@Param("studentId") Long studentId);
+
+    // 학기별 상세 성적 조회 (특정 학기의 과목별 성적)
+    List<Map<String, Object>> findMyGradesBySemesterDetail(@Param("studentId") Long studentId, @Param("semesterId") Long semesterId);
+    
+    // 학생 정보 조회 (student.id로 조회)
+    Map<String, Object> findStudentInfoById(@Param("studentId") Long studentId);
+
     // 퍼센트 기반 학점 분배를 위한 통계 메서드들
     Long countStudentsByEnrollment(@Param("enrollmentId") Long enrollmentId);
     Long countStudentsWithHigherScore(@Param("enrollmentId") Long enrollmentId, @Param("score") int score);
+    
+    // 글로벌 규정 관리
+    void deleteAlphabetGlobal();
+    void insertAlphabetGlobal(AlphabetSystem rule);
 
     /*==================================공통================================*/
     //성적 단건 조회
@@ -189,6 +212,7 @@ public interface GradeMapper {
     // 과목별 규정 상태 총 건수
     long countSubjectRules(@Param("searchType") String searchType,
                           @Param("searchKeyword") String searchKeyword);
+    
     
     // 🔥 제거됨: 과목별 규정 삭제 (deleteAlphabetBySubject와 중복)
 }

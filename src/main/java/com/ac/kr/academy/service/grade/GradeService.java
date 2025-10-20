@@ -14,8 +14,12 @@ import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 import java.util.Map;
+import com.ac.kr.academy.mapper.grade.GradeMapper;
 
 public interface GradeService {
+    
+    // 디버깅용 매퍼 접근
+    GradeMapper getGradeMapper();
 
     /*================================관리자================================*/
     // 글로벌 규정 조회
@@ -24,7 +28,6 @@ public interface GradeService {
                                                        @Param("req") PageRequestDTO req);
 
     // 글로벌 규정 등록
-    void addAlphabetGlobal(AlphabetSystem as);
 
     // 특정 과목 규정 조회
     PageResponseDTO<AlphabetSystem> listAlphabetBySubject(Long subjectId,
@@ -42,22 +45,12 @@ public interface GradeService {
     // 규정 삭제
     void deleteAlphabetRule(@Param("id") Long id);
 
-    // 전체 규정을 Map으로 조회
-    Map<String, Double> getGlobalRulesMap();
-
-    // 전체 규정을 List로 조회 (교수용)
-    List<AlphabetSystem> getGlobalRulesAll();
-
-    // 전체 규정 저장 (한 번에 모든 학점 비율 설정)
-    void saveGlobalRules(Map<String, String> params);
 
 
     // ================== 과목별 규정 ==================
     // 모든 과목 조회
     List<Subject> getAllSubjects();
 
-    // 특정 과목 조회
-    Subject getSubjectById(Long subjectId);
 
     // 성적이 없는 학생들 조회 (성적 등록용)
     List<Map<String, Object>> getStudentsWithoutGrade(Long courseId);
@@ -81,6 +74,9 @@ public interface GradeService {
 
     // 점수분배 수정
     void editGradeSystem(GradeSystem gs);
+    
+    // 점수분배 조회
+    GradeSystem getGradeSystemById(Long id);
 
     // 성적 목록 조회 (검색 / 페이징)
     PageResponseDTO<Grade> listByCourse(@Param("professorId") Long professorId,
@@ -99,6 +95,9 @@ public interface GradeService {
     // 성적 삭제
     void deleteGrade(Long gradeId, Long professorId);
 
+    // 기본 글로벌 알파벳 규정 조회
+    List<AlphabetSystem> getDefaultAlphabetRules();
+
     GradeSystem getGradeSystemByCourse(Long courseId);
 
     Map<String, Object> calculateGradePreview(Grade grade);
@@ -110,14 +109,21 @@ public interface GradeService {
 
 
     /*================================학생================================*/
-    // 학생 성적 목록 조회 (페이징 / 검색)
-    PageResponseDTO<Grade> listMyGrades(@Param("studentId") Long studentId,
-                                        @Param("searchType") String searchType,
-                                        @Param("searchKeyword") String searchKeyword,
-                                        @Param("req") PageRequestDTO req);
+
+    // 학생 수강신청 목록 조회 (성적 등록 여부 포함)
+    PageResponseDTO<Map<String, Object>> listMyEnrollmentsWithGrades(@Param("studentId") Long studentId,
+                                                                     @Param("searchType") String searchType,
+                                                                     @Param("searchKeyword") String searchKeyword,
+                                                                     @Param("req") PageRequestDTO req);
 
     // 학생 성적 단건 조회(상세조회)
     Grade getMyGrade(Long studentId, Long id);
+
+    // 학기별 성적 조회 (1~8학기)
+    PageResponseDTO<Map<String, Object>> listMyGradesBySemester(Long studentId);
+
+    // 학기별 상세 성적 조회 (특정 학기의 과목별 성적)
+    PageResponseDTO<Map<String, Object>> listMyGradesBySemesterDetail(Long studentId, Long semesterId);
 
     /*================================공통================================*/
     // 성적 단건 조회
@@ -137,6 +143,12 @@ public interface GradeService {
                                                                String searchKeyword, 
                                                                PageRequestDTO req);
     
+    // 글로벌 규정 저장
+    void saveGlobalRules(Map<String, String> params);
+    
+    // 전체 학생 학점 재계산 (상대평가용)
+    void recalculateAllGradesForCourse(Long courseId);
+    
     // 과목별 규정 초기화 (글로벌 규정으로 되돌리기)
     void resetSubjectToGlobal(Long subjectId);
     
@@ -145,4 +157,5 @@ public interface GradeService {
     
     // 글로벌 규정을 복사하여 커스텀 규정 생성
     void createCustomRulesFromGlobal(Long subjectId);
+    
 }

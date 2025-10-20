@@ -3,7 +3,8 @@ package com.ac.kr.academy.domain.grade;
 import lombok.Data;
 
 @Data
-public class Grade {
+public class
+Grade {
     private Long id;
     private String alphabet;
     private Long gpa;           //평균 학점

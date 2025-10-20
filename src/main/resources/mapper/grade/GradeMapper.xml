@@ -144,14 +144,6 @@
         </where>
     </select>
 
-    <!-- 글로벌 규정 추가 (course_id = Null 이면 전체 적용) -->
-    <insert id="insertAlphabetGlobal" parameterType="com.ac.kr.academy.domain.grade.AlphabetSystem">
-        <selectKey keyProperty="id" resultType="long" order="BEFORE">
-            SELECT alphabet_system_seq.NEXTVAL FROM dual
-        </selectKey>
-        INSERT INTO alphabet_system (id, course_id, alphabet, boundary, description)
-        VALUES (#{id}, #{courseId, jdbcType=NUMERIC}, #{alphabet}, #{boundary}, #{description})
-    </insert>
 
     <!-- 특정 강의 규정 추가 (course_id = 값 일경우 적용) -->
     <insert id="insertAlphabetBySubject" parameterType="com.ac.kr.academy.domain.grade.AlphabetSystem">
@@ -182,12 +174,6 @@
         WHERE id = #{id}
     </delete>
 
-    <!-- 모든 글로벌 규정 삭제 -->
-    <delete id="deleteAllGlobalRules">
-        DELETE
-        FROM alphabet_system
-        WHERE course_id IS NULL
-    </delete>
 
     <!-- 특정 과목의 모든 규정 삭제 -->
     <delete id="deleteAlphabetBySubject">
@@ -254,6 +240,16 @@
             course_id        = #{courseId}
         WHERE id = #{id}
     </update>
+    
+    <!--점수 비율 조회-->
+    <select id="getGradeSystemById" parameterType="long" resultType="com.ac.kr.academy.domain.grade.GradeSystem">
+        SELECT id, mid_exam_ratio as midExamRatio, final_exam_ratio as finalExamRatio,
+               assignment_ratio as assignmentRatio, attendance_ratio as attendanceRatio, course_id as courseId
+        FROM grade_system
+        WHERE id = #{id}
+    </select>
+    
+    
 
     <!--특정 수업(course) 성적 총 건수 조회-->
     <!-- 검색 필터 -->
@@ -335,7 +331,7 @@
         )VALUES (
         #{id}, #{alphabet}, #{gpa}, #{score}, #{totalInt},
         #{midExam}, #{finalExam}, #{assignment}, #{attendance},
-        #{studentId}, #{enrollmentId}
+        #{studentId, jdbcType=NUMERIC}, #{enrollmentId, jdbcType=NUMERIC}
         )
     </insert>
 
@@ -346,97 +342,21 @@
             GPA        = #{gpa},
             score      = #{score},
             total_int  = #{totalInt},
-            mid_exam   = #{midExam},
-            final_exam = #{finalExam},
-            assignment = #{assignment},
-            attendance = #{attendance}
-        WHERE id = #{id}
+            mid_exam   = #{midExam, jdbcType=NUMERIC},
+            final_exam = #{finalExam, jdbcType=NUMERIC},
+            assignment = #{assignment, jdbcType=NUMERIC},
+            attendance = #{attendance, jdbcType=NUMERIC}
+        WHERE id = #{id, jdbcType=NUMERIC}
     </update>
 
     <!--성적 삭제-->
     <delete id="delete" parameterType="long">
         DELETE
         FROM grade
-        WHERE id = #{id}
+        WHERE id = #{id, jdbcType=NUMERIC}
     </delete>
     <!--============================학생=================================-->
-    <!--학생 성적 총 건수-->
-    <select id="countMyGrade" resultType="long">
-        SELECT COUNT(*)
-        FROM grade g
-        JOIN enrollment e ON g.enrollment_id = e.id
-        JOIN course c ON e.course_id =c.id
-        LEFT JOIN subject sj ON c.subject_id = sj.id
-        WHERE g.student_id = #{studentId}
-        <if test="searchKeyword != null and searchKeyword != ''">
-            <choose>
-                <when test="searchType == 'all'">
-                    AND (
-                    TO_CHAR(g.id)     LIKE '%' || #{searchKeyword} || '%' OR
-                    UPPER(sj.name)    LIKE '%' || UPPER(#{searchKeyword}) || '%' OR
-                    UPPER(g.alphabet) LIKE '%' || UPPER(#{searchKeyword}) || '%'
-                    )
-                </when>
 
-                <when test="searchType == 'id'">
-                    AND g.id = TO_NUMBER(#{searchKeyword})
-                </when>
-                <when test="searchType == 'subject'">
-                    AND UPPER(sj.name) LIKE '%' || UPPER(#{searchKeyword}) || '%'
-                </when>
-                <when test="searchType == 'alphabet'">
-                    AND UPPER(g.alphabet) LIKE '%' || UPPER(#{searchKeyword}) || '%'
-                </when>
-            </choose>
-        </if>
-    </select>
-
-    <!--학생 성적 목록-->
-    <select id="findMyGrade" resultMap="GradeMap">
-        SELECT *
-        FROM (
-        SELECT t.*, ROWNUM rn
-        FROM (
-        SELECT
-        g.id, g.alphabet, g.gpa AS GPA, g.score, g.total_int,
-        g.mid_exam, g.final_exam, g.assignment, g.attendance,
-        g.student_id, g.enrollment_id,
-        sj.name AS subjectName,
-        s.student_num AS studentNo, u.name AS studentName
-        FROM grade g
-        JOIN enrollment e    ON g.enrollment_id = e.id
-        JOIN course c        ON e.course_id     = c.id
-        LEFT JOIN subject sj ON c.subject_id    = sj.id
-        LEFT JOIN student s  ON g.student_id    = s.id
-        LEFT JOIN users u    ON s.user_id       = u.id
-        WHERE g.student_id = #{studentId}
-        <if test="searchKeyword != null and searchKeyword != ''">
-            <choose>
-                <when test="searchType == 'all'">
-                    AND (
-                    TO_CHAR(g.id)     LIKE '%' || #{searchKeyword} || '%' OR
-                    UPPER(sj.name)    LIKE '%' || UPPER(#{searchKeyword}) || '%' OR
-                    UPPER(g.alphabet) LIKE '%' || UPPER(#{searchKeyword}) || '%'
-                    )
-                </when>
-
-                <when test="searchType == 'id'">
-                    AND g.id = TO_NUMBER(#{searchKeyword})
-                </when>
-                <when test="searchType == 'subject'">
-                    AND UPPER(sj.name) LIKE '%' || UPPER(#{searchKeyword}) || '%'
-                </when>
-                <when test="searchType == 'alphabet'">
-                    AND UPPER(g.alphabet) LIKE '%' || UPPER(#{searchKeyword}) || '%'
-                </when>
-            </choose>
-        </if>
-        ORDER BY g.id DESC
-        ) t
-        WHERE ROWNUM &lt;= #{end}
-        )
-        WHERE rn &gt; #{start}
-    </select>
 
     <!--성적 단건 조회-->
     <select id="findMyGradeById" resultMap="GradeMap">
@@ -488,36 +408,18 @@
             <if test="subjectId != null">
                 AND course_id = #{subjectId}
             </if>
-            <if test="subjectId == null">
-                AND course_id IS NOT NULL
+            <if test="subjectId == null and enrollmentId != null">
+                AND course_id = (
+                    SELECT c.subject_id 
+                    FROM enrollment e 
+                    JOIN course c ON e.course_id = c.id 
+                    WHERE e.id = #{enrollmentId}
+                )
             </if>
         </where>
         ORDER BY boundary DESC
     </select>
 
-    <!-- 글로벌 규정 전체 (A+부터 F까지 순서) -->
-    <select id="listAlphabetGlobalAll"
-            resultType="com.ac.kr.academy.domain.grade.AlphabetSystem">
-        SELECT id,
-               course_id     AS courseId,
-               alphabet,
-               boundary
-        FROM alphabet_system
-        WHERE course_id IS NULL
-        ORDER BY 
-            CASE alphabet 
-                WHEN 'A+' THEN 1
-                WHEN 'A' THEN 2
-                WHEN 'B+' THEN 3
-                WHEN 'B' THEN 4
-                WHEN 'C+' THEN 5
-                WHEN 'C' THEN 6
-                WHEN 'D+' THEN 7
-                WHEN 'D' THEN 8
-                WHEN 'F' THEN 9
-                ELSE 10
-            END ASC
-    </select>
 
     <!-- ================== 과목별 규정 목록 (검색/페이징) ================== -->
     <!-- 과목별 규정 총 건수 -->
@@ -535,7 +437,7 @@
                     </when>
                     <otherwise>
                         AND (UPPER(s.name) LIKE '%' || UPPER(#{searchKeyword}) || '%'
-                             OR s.id = TO_NUMBER(#{searchKeyword}))
+                             OR (REGEXP_LIKE(#{searchKeyword}, '^[0-9]+$') AND s.id = TO_NUMBER(#{searchKeyword})))
                     </otherwise>
                 </choose>
             </if>
@@ -552,7 +454,48 @@
             resultType="long">
         SELECT course_id
         FROM enrollment
-        WHERE id = #{enrollmentId}
+        WHERE id = #{enrollmentId, jdbcType=NUMERIC}
+    </select>
+
+    <!-- (선택) 수강ID → 학생ID -->
+    <select id="findStudentIdByEnrollment"
+            parameterType="long"
+            resultType="long">
+        SELECT student_id
+        FROM enrollment
+        WHERE id = #{enrollmentId, jdbcType=NUMERIC}
+    </select>
+
+    <!-- (선택) 수강ID → 과목ID -->
+    <select id="findSubjectIdByEnrollment"
+            parameterType="long"
+            resultType="long">
+        SELECT c.subject_id
+        FROM enrollment e
+        JOIN course c ON e.course_id = c.id
+        WHERE e.id = #{enrollmentId, jdbcType=NUMERIC}
+    </select>
+
+    <!-- (선택) 강의ID → 과목ID -->
+    <select id="findSubjectIdByCourse"
+            parameterType="long"
+            resultType="long">
+        SELECT subject_id
+        FROM course
+        WHERE id = #{courseId, jdbcType=NUMERIC}
+    </select>
+
+    <!-- 강의의 모든 성적 조회 -->
+    <select id="findAllGradesByCourse"
+            parameterType="long"
+            resultMap="GradeMap">
+        SELECT g.id, g.alphabet, g.gpa AS GPA, g.score, g.total_int,
+               g.mid_exam, g.final_exam, g.assignment, g.attendance,
+               g.student_id, g.enrollment_id
+        FROM grade g
+        JOIN enrollment e ON g.enrollment_id = e.id
+        WHERE e.course_id = #{courseId, jdbcType=NUMERIC}
+        ORDER BY g.total_int DESC
     </select>
 
     <!-- ================= [옵션] 권한 체크 ================= -->
@@ -567,12 +510,25 @@
 
     <!-- ================= 퍼센트 기반 학점 분배를 위한 통계 ================= -->
     <select id="countStudentsByEnrollment" resultType="Long">
-        SELECT COUNT(*) FROM grade WHERE enrollment_id = #{enrollmentId}
+        SELECT COUNT(*) 
+        FROM enrollment e
+        WHERE e.course_id = (
+            SELECT course_id 
+            FROM enrollment 
+            WHERE id = #{enrollmentId, jdbcType=NUMERIC}
+        )
     </select>
 
     <select id="countStudentsWithHigherScore" resultType="Long">
-        SELECT COUNT(*) FROM grade 
-        WHERE enrollment_id = #{enrollmentId} AND total_int > #{score}
+        SELECT COUNT(*) 
+        FROM grade g
+        JOIN enrollment e ON g.enrollment_id = e.id
+        WHERE e.course_id = (
+            SELECT course_id 
+            FROM enrollment 
+            WHERE id = #{enrollmentId, jdbcType=NUMERIC}
+        )
+        AND g.total_int >= #{score}
     </select>
 
     <!-- ================= [교수 강의 목록] ================= -->
@@ -593,7 +549,7 @@
                     s.credit,
                     se.id as semesterId,
                     se.name as semesterName,
-                    se.year as semesterYear,
+                    se.name as semesterYear,
                     COUNT(e.id) as enrollmentCount
                 FROM course c
                 JOIN subject s ON c.subject_id = s.id
@@ -610,7 +566,7 @@
                         </when>
                     </choose>
                 </if>
-                GROUP BY c.id, s.id, s.name, s.credit, se.id, se.name, se.year
+                GROUP BY c.id, s.id, s.name, s.credit, se.id, se.name
             )
         ) WHERE rn BETWEEN #{start} AND #{end}
     </select>
@@ -672,12 +628,17 @@
 
     <!-- 과목별 규정 상태 조회 -->
     <select id="findSubjectRulesStatus" resultType="Map">
-        SELECT * FROM (
+        SELECT 
+            "subjectId",
+            "subjectName", 
+            "credit",
+            "rn"
+        FROM (
             SELECT 
-                s.id as subjectId,
-                s.name as subjectName,
-                s.credit,
-                ROW_NUMBER() OVER (ORDER BY s.id DESC) as rn
+                s.id as "subjectId",
+                s.name as "subjectName",
+                s.credit as "credit",
+                ROW_NUMBER() OVER (ORDER BY s.id DESC) as "rn"
             FROM subject s
             <where>
                 <if test="searchType != null and searchType != '' and searchKeyword != null and searchKeyword != ''">
@@ -690,14 +651,164 @@
                         </when>
                         <otherwise>
                             AND (UPPER(s.name) LIKE '%' || UPPER(#{searchKeyword}) || '%'
-                                 OR s.id = TO_NUMBER(#{searchKeyword}))
+                                 OR (REGEXP_LIKE(#{searchKeyword}, '^[0-9]+$') AND s.id = TO_NUMBER(#{searchKeyword})))
                         </otherwise>
                     </choose>
                 </if>
             </where>
-        ) WHERE rn BETWEEN #{start} AND #{end}
+        ) WHERE "rn" BETWEEN #{start} AND #{end}
     </select>
 
     <!-- 🔥 제거됨: 과목별 규정 삭제 (deleteAlphabetBySubject와 중복) -->
+
+    <!-- 학생 수강신청 목록 총 건수 (성적 등록 여부 포함) -->
+    <select id="countMyEnrollmentsWithGrades" resultType="long">
+        SELECT COUNT(*)
+        FROM enrollment e
+        INNER JOIN course c ON e.course_id = c.id
+        INNER JOIN subject s ON c.subject_id = s.id
+        WHERE e.student_id = #{studentId}
+        <if test="searchType != null and searchType != '' and searchKeyword != null and searchKeyword != ''">
+            <choose>
+                <when test="searchType == 'subject'">
+                    AND UPPER(s.name) LIKE '%' || UPPER(#{searchKeyword}) || '%'
+                </when>
+                <when test="searchType == 'id'">
+                    AND s.id = TO_NUMBER(#{searchKeyword})
+                </when>
+                <when test="searchType == 'alphabet'">
+                    AND EXISTS (
+                        SELECT 1 FROM grade g 
+                        WHERE g.enrollment_id = e.id 
+                        AND UPPER(g.alphabet) LIKE '%' || UPPER(#{searchKeyword}) || '%'
+                    )
+                </when>
+                <otherwise>
+                    AND (UPPER(s.name) LIKE '%' || UPPER(#{searchKeyword}) || '%'
+                         OR (REGEXP_LIKE(#{searchKeyword}, '^[0-9]+$') AND s.id = TO_NUMBER(#{searchKeyword}))
+                         OR EXISTS (
+                             SELECT 1 FROM grade g 
+                             WHERE g.enrollment_id = e.id 
+                             AND UPPER(g.alphabet) LIKE '%' || UPPER(#{searchKeyword}) || '%'
+                         ))
+                </otherwise>
+            </choose>
+        </if>
+    </select>
+
+    <!-- 학생 수강신청 목록 조회 (성적 등록 여부 포함) -->
+    <select id="findMyEnrollmentsWithGrades" resultType="Map">
+        SELECT * FROM (
+            SELECT 
+                e.id as "enrollmentId",
+                s.id as "subjectId",
+                s.name as "subjectName",
+                s.credit as "credit",
+                g.id as "gradeId",
+                g.alphabet as "alphabet",
+                g.total_int as "totalScore",
+                g.score as "score",
+                g.gpa as "gpa",
+                CASE WHEN g.id IS NULL THEN '미입력' ELSE '입력완료' END as "gradeStatus",
+                ROW_NUMBER() OVER (ORDER BY e.id DESC) as "rn"
+            FROM enrollment e
+            INNER JOIN course c ON e.course_id = c.id
+            INNER JOIN subject s ON c.subject_id = s.id
+            LEFT JOIN grade g ON e.id = g.enrollment_id
+            WHERE e.student_id = #{studentId}
+            <if test="searchType != null and searchType != '' and searchKeyword != null and searchKeyword != ''">
+                <choose>
+                    <when test="searchType == 'subject'">
+                        AND UPPER(s.name) LIKE '%' || UPPER(#{searchKeyword}) || '%'
+                    </when>
+                    <when test="searchType == 'id'">
+                        AND s.id = TO_NUMBER(#{searchKeyword})
+                    </when>
+                    <when test="searchType == 'alphabet'">
+                        AND EXISTS (
+                            SELECT 1 FROM grade g2 
+                            WHERE g2.enrollment_id = e.id 
+                            AND UPPER(g2.alphabet) LIKE '%' || UPPER(#{searchKeyword}) || '%'
+                        )
+                    </when>
+                    <otherwise>
+                        AND (UPPER(s.name) LIKE '%' || UPPER(#{searchKeyword}) || '%'
+                             OR (REGEXP_LIKE(#{searchKeyword}, '^[0-9]+$') AND s.id = TO_NUMBER(#{searchKeyword}))
+                             OR EXISTS (
+                                 SELECT 1 FROM grade g2 
+                                 WHERE g2.enrollment_id = e.id 
+                                 AND UPPER(g2.alphabet) LIKE '%' || UPPER(#{searchKeyword}) || '%'
+                             ))
+                    </otherwise>
+                </choose>
+            </if>
+        ) WHERE "rn" BETWEEN #{start} AND #{end}
+    </select>
+
+    <!-- 학기별 성적 조회 (1~8학기) - 간단한 버전 -->
+    <select id="findMyGradesBySemester" resultType="Map">
+        SELECT 
+            ROW_NUMBER() OVER (ORDER BY sem.id) as "SEMESTER",
+            NVL(SUM(sub.credit), 0) as "APPLIED_CREDITS",
+            NVL(SUM(CASE WHEN g.id IS NOT NULL THEN sub.credit ELSE 0 END), 0) as "ACQUIRED_CREDITS",
+            NVL(AVG(CASE WHEN g.id IS NOT NULL THEN g.gpa / 10.0 END), 0) as "AVERAGE_GPA"
+        FROM semester sem
+        LEFT JOIN course c ON sem.id = c.semester_id
+        LEFT JOIN enrollment e ON c.id = e.course_id AND e.student_id = #{studentId}
+        LEFT JOIN subject sub ON c.subject_id = sub.id
+        LEFT JOIN grade g ON e.id = g.enrollment_id
+        GROUP BY sem.id
+        ORDER BY sem.id
+    </select>
+
+    <!-- 학기별 상세 성적 조회 (특정 학기의 과목별 성적) -->
+    <select id="findMyGradesBySemesterDetail" resultType="Map">
+        SELECT 
+            sub.id as "subjectId",
+            sub.name as "subjectName",
+            sub.credit as "credit",
+            g.alphabet as "alphabet",
+            CASE 
+                WHEN g.gpa IS NOT NULL THEN g.gpa / 10.0
+                ELSE NULL
+            END as "gpa"
+        FROM grade g
+        INNER JOIN enrollment e ON g.enrollment_id = e.id
+        INNER JOIN course c ON e.course_id = c.id
+        INNER JOIN semester sem ON c.semester_id = sem.id
+        INNER JOIN subject sub ON c.subject_id = sub.id
+        WHERE e.student_id = #{studentId} AND sem.id = #{semesterId}
+        ORDER BY g.id DESC
+    </select>
+
+    <!-- 학생 정보 조회 (student.id로 조회) -->
+    <select id="findStudentInfoById" resultType="Map">
+        SELECT 
+            s.id as "studentId",
+            s.student_num as "studentNo",
+            u.name as "studentName",
+            u.email as "email",
+            u.phone as "phone",
+            d.dept_name as "major",
+            SUBSTR(s.student_num, 1, 4) as "admissionYear"
+        FROM student s
+        JOIN users u ON s.user_id = u.id
+        LEFT JOIN dept d ON s.dept_id = d.id
+        WHERE s.id = #{studentId, jdbcType=NUMERIC}
+    </select>
+
+    <!-- 글로벌 규정 관리 -->
+    <delete id="deleteAlphabetGlobal">
+        DELETE FROM alphabet_system WHERE course_id IS NULL
+    </delete>
+
+    <insert id="insertAlphabetGlobal">
+        <selectKey keyProperty="id" resultType="long" order="BEFORE">
+            SELECT alphabet_system_seq.NEXTVAL FROM dual
+        </selectKey>
+        INSERT INTO alphabet_system (id, alphabet, boundary, course_id, description) 
+        VALUES (#{id}, #{alphabet}, #{boundary}, NULL, '글로벌 규정')
+    </insert>
+
 
 </mapper>
