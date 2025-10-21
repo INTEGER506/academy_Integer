@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ac.kr.academy.mapper.user.staff.StaffMapper">
+    <resultMap id="staffMap" type="com.ac.kr.academy.domain.user.Staff">
+        <id property="id" column="id" />
+        <result property="staffNum" column="staff_num" />
+        <result property="createdAt" column="created_at" />
+        <result property="endedAt" column="ended_at" />
+        <result property="userId" column="user_id" />
+    </resultMap>
+
+    <resultMap id="MyPageInfoDTO" type="com.ac.kr.academy.dto.user.MyPageInfoDTO">
+        <id property="id" column="id" />
+        <result property="staffNum" column="staff_num" />
+        <result property="createdAt" column="created_at" />
+        <result property="endedAt" column="ended_at" />
+        <result property="userId" column="user_id" />
+
+        <result property="email" column="email" />
+        <result property="phone" column="phone" />
+        <result property="name" column="name" />
+        <result property="username" column="username" />
+    </resultMap>
+
+    <insert id="insertStaff" parameterType="com.ac.kr.academy.domain.user.Staff">
+        <selectKey keyProperty="id" order="BEFORE" resultType="long">
+            SELECT staff_seq.NEXTVAL FROM dual
+        </selectKey>
+        INSERT INTO staff (id, staff_num, created_at, user_id)
+        VALUES (#{id}, #{staffNum}, SYSDATE, #{userId})
+    </insert>
+
+    <update id="updateStaff" parameterType="com.ac.kr.academy.domain.user.Staff">
+        UPDATE staff
+        <set>
+            <if test="endedAt != null">
+                ended_at = #{endedAt}
+            </if>
+        </set>
+        WHERE user_id = #{userId}
+    </update>
+
+    <delete id="deleteStaff" parameterType="long">
+        DELETE FROM staff
+        WHERE user_id = #{id}
+    </delete>
+
+    <select id="findByUserId" resultMap="staffMap">
+        SELECT s.*, u.username, u.email, u.phone, u.role
+        FROM staff s
+                 JOIN users u ON s.user_id = u.id
+        WHERE s.user_id = #{userId}
+    </select>
+
+    <select id="findByUserIdForUpdate" resultMap="MyPageInfoDTO">
+        SELECT s.id, s.user_id, s.created_at, s.ended_at, s.staff_num,
+               u.email, u.phone, u.name, u.username
+        FROM staff s
+        JOIN users u ON s.user_id = u.id
+        WHERE s.user_id = #{userId}
+    </select>
+</mapper>

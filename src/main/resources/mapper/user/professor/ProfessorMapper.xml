@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ac.kr.academy.mapper.user.professor.ProfessorMapper">
+    <resultMap id="professorMap" type="com.ac.kr.academy.domain.user.Professor">
+        <id property="id" column="id" />
+        <result property="professorNum" column="professor_num" />
+        <result property="createdAt" column="created_at" />
+        <result property="endedAt" column="ended_at" />
+        <result property="deptId" column="dept_id" />
+        <result property="userId" column="user_id" />
+    </resultMap>
+
+    <resultMap id="MyPageInfoDTO" type="com.ac.kr.academy.dto.user.MyPageInfoDTO">
+        <id property="id" column="id" />
+        <result property="professorNum" column="professor_num" />
+        <result property="createdAt" column="created_at" />
+        <result property="endedAt" column="ended_at" />
+        <result property="deptId" column="dept_id" />
+        <result property="userId" column="user_id" />
+        <result property="deptName" column="deptName" />
+
+        <result property="email" column="email" />
+        <result property="phone" column="phone" />
+        <result property="name" column="name" />
+        <result property="username" column="username" />
+    </resultMap>
+
+    <insert id="insertProfessor" parameterType="com.ac.kr.academy.domain.user.Professor">
+        <selectKey keyProperty="id" order="BEFORE" resultType="long">
+            SELECT professor_seq.NEXTVAL FROM dual
+        </selectKey>
+        INSERT INTO professor (id, professor_num, created_at, dept_id, user_id)
+        VALUES (#{id}, #{professorNum}, SYSDATE, #{deptId}, #{userId})
+    </insert>
+
+    <update id="updateProfessor" parameterType="com.ac.kr.academy.domain.user.Professor">
+        UPDATE professor
+        <set>
+            <if test="endedAt != null">
+                ended_at = #{endedAt},
+            </if>
+            <if test="deptId != null">
+                dept_id = #{deptId}
+            </if>
+        </set>
+        WHERE user_id = #{userId}
+    </update>
+
+    <delete id="deleteProfessor" parameterType="long">
+        DELETE FROM professor
+        WHERE user_id = #{id}
+    </delete>
+
+    <select id="findByUserId" resultMap="professorMap">
+        SELECT p.*, u.username, u.email, u.phone, u.name, u.role
+        FROM professor p
+                 JOIN users u ON p.user_id = u.id
+        WHERE p.user_id = #{userId}
+    </select>
+
+    <!--권한변경을 위한 추가 메서드 (교수 -> 지도교수)-->
+    <select id="findProfessorIdByUserId" resultType="long">
+        SELECT id
+        FROM professor
+        WHERE user_id = #{userId}
+    </select>
+
+    <!-- 마이페이지용 -->
+    <select id="findByUserIdWithDept" resultMap="MyPageInfoDTO">
+        SELECT p.id, p.dept_id, p.user_id, p.professor_num, p.created_at, p.ended_at,
+               d.dept_name AS deptName,
+               u.email, u.phone, u.name, u.username
+        FROM professor p
+        JOIN users u ON p.user_id = u.id
+        LEFT JOIN dept d ON p.dept_id = d.id
+        WHERE p.user_id = #{userId}
+    </select>
+
+</mapper>

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ac.kr.academy.mapper.calendar.CalendarMapper">
+
+    <resultMap id="CalendarResultMap" type="com.ac.kr.academy.domain.calendar.Calendar">
+        <id property="id" column="id"/>
+        <result property="content" column="content"/>
+        <result property="startDate" column="start_date"/>
+        <result property="endDate" column="end_date"/>
+        <result property="color" column="color"/>
+        <result property="userId" column="user_id"/>
+    </resultMap>
+
+
+    <insert id="insert" parameterType="com.ac.kr.academy.domain.calendar.Calendar">
+        <selectKey keyProperty="id" resultType="long" order="BEFORE">
+            SELECT  calendar_seq.NEXTVAL FROM dual
+        </selectKey>
+        INSERT INTO calendar (
+        id, content, start_date, end_date, color, user_id
+        )
+        VALUES (
+        #{id}, #{content}, #{startDate}, #{endDate}, #{color}, #{userId}
+        )
+    </insert>
+
+
+    <select id="findAll" resultMap="CalendarResultMap">
+        SELECT id, content, start_date, end_date, color, user_id
+        FROM calendar
+    </select>
+
+
+    <select id="findById" parameterType="long" resultMap="CalendarResultMap">
+        SELECT id, content, start_date, end_date, color, user_id
+        FROM calendar
+        WHERE id = #{id}
+    </select>
+
+
+    <select id="findByUserId" parameterType="long" resultMap="CalendarResultMap">
+        SELECT id, content, start_date, end_date, color, user_id
+        FROM calendar
+        WHERE user_id = #{userId}
+        ORDER BY start_date DESC
+    </select>
+
+
+    <select id="findByDate" parameterType="string" resultMap="CalendarResultMap">
+        SELECT id, content, start_date, end_date, color, user_id
+        FROM calendar
+        WHERE (start_date &lt;= #{date} AND end_date &gt;= #{date})
+        ORDER BY start_date
+    </select>
+
+
+    <update id="update" parameterType="com.ac.kr.academy.domain.calendar.Calendar">
+        UPDATE calendar
+        SET content = #{content},
+            start_date = #{startDate},
+            end_date = #{endDate},
+            color = #{color}
+        WHERE id = #{id}
+    </update>
+
+
+    <delete id="delete" parameterType="long">
+        DELETE FROM calendar
+        WHERE id = #{id}
+    </delete>
+</mapper>

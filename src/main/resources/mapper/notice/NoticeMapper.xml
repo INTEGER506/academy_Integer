@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ac.kr.academy.mapper.notice.NoticeMapper">
+    <resultMap id="noticeMap" type="com.ac.kr.academy.domain.notice.Notice">
+        <id property="id" column="id" />
+        <result property="title" column="title" />
+        <result property="content" column="content" />
+        <result property="startDate" column="start_date" />
+        <result property="endDate" column="end_date" />
+        <result property="createdAt" column="created_at" />
+        <result property="deadline" column="deadline" />
+        <result property="viewCount" column="view_count" />
+        <result property="isUrgent" column="is_urgent" />
+        <result property="isSent" column="is_sent" />
+    </resultMap>
+
+    <insert id="insertNotice" parameterType="com.ac.kr.academy.domain.notice.Notice">
+        <selectKey keyProperty="id" order="BEFORE" resultType="long">
+            SELECT notice_seq.NEXTVAL FROM dual
+        </selectKey>
+        INSERT INTO notice (
+            id, title, content, start_date, end_date, created_at,
+            deadline, view_count, is_urgent, is_sent
+        ) VALUES (
+            #{id}, #{title}, #{content}, #{startDate}, #{endDate}, SYSDATE,
+            #{deadline}, 0, 0, 0
+        )
+    </insert>
+
+    <select id="getAllNotices" resultMap="noticeMap" >
+        SELECT id, title, start_date, end_date, created_at, view_count, is_urgent
+        FROM notice
+        ORDER BY is_urgent DESC, created_at DESC
+    </select>
+
+    <select id="findByNoticeId" parameterType="long" resultMap="noticeMap">
+        SELECT * FROM notice
+        WHERE id = #{id}
+    </select>
+
+    <update id="updateNotice">
+        UPDATE notice
+        SET title = #{title},
+            content = #{content},
+            start_date = #{startDate},
+            end_date = #{endDate},
+            deadline = #{deadline},
+            is_urgent = #{isUrgent}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteNotice" parameterType="long">
+        DELETE FROM notice
+        WHERE id = #{id}
+    </delete>
+
+    <update id="increaseViewCount">
+        UPDATE notice
+        SET view_count = view_count +1
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateDeadlineStatus" parameterType="long">
+        UPDATE notice
+        SET is_sent = 1
+        WHERE id = #{id}
+    </update>
+
+</mapper>

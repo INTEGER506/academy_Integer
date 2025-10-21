@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ac.kr.academy.mapper.log.LogHistoryMapper">
+
+    <!-- ResultMap -->
+    <resultMap id="logHistoryMap" type="com.ac.kr.academy.domain.log.LogHistory">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="username" column="username"/>
+        <result property="loginTime" column="login_time" jdbcType="TIMESTAMP"/>
+        <result property="logoutTime" column="logout_time" jdbcType="TIMESTAMP"/>
+        <result property="ipAddress" column="ip_address"/>
+    </resultMap>
+
+    <!-- 로그인 기록 저장 -->
+    <insert id="insertLoginLog" parameterType="com.ac.kr.academy.domain.log.LogHistory">
+        <selectKey keyProperty="id" order="BEFORE" resultType="long">
+            SELECT log_history_seq.NEXTVAL FROM dual
+        </selectKey>
+        INSERT INTO log_history (id, user_id, username, ip_address)
+        VALUES (#{id}, #{userId}, #{username}, #{ipAddress})
+    </insert>
+
+    <!-- 로그아웃 시간 업데이트 -->
+    <update id="updateLogoutTime" parameterType="long">
+        UPDATE log_history
+        SET logout_time = CURRENT_TIMESTAMP
+        WHERE id = (
+            SELECT MAX(id)
+            FROM log_history
+            WHERE user_id = #{userId}
+              AND logout_time IS NULL
+        )
+    </update>
+
+    <!-- 전체 로그 조회 -->
+    <select id="findAllLogs" resultMap="logHistoryMap">
+        SELECT id,
+               user_id,
+               username,
+               login_time,
+               logout_time,
+               ip_address
+        FROM log_history
+        ORDER BY login_time ASC
+    </select>
+
+</mapper>

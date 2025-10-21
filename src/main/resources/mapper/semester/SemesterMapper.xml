@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ac.kr.academy.mapper.semester.SemesterMapper">
+
+    <!-- 학기 추가 -->
+    <insert id="insert">
+        <selectKey keyProperty="id" order="BEFORE" resultType="long">
+            SELECT semester_seq.NEXTVAL FROM dual
+        </selectKey>
+        INSERT INTO semester(id, name, enrollmentStartDate, enrollmentEndDate)
+        VALUES (#{id}, #{name}, #{enrollmentStartDate}, #{enrollmentEndDate})
+    </insert>
+
+    <!-- 학기 id로 조회   -->
+    <select id="findById" resultType="com.ac.kr.academy.domain.semester.Semester">
+        SELECT
+            id, name, enrollmentStartDate, enrollmentEndDate
+        FROM semester
+        WHERE id = #{id}
+    </select>
+
+    <!-- 모든 학기 조회 -->
+    <select id="findAll" resultType="com.ac.kr.academy.domain.semester.Semester">
+        SELECT
+            id, name, enrollmentStartDate, enrollmentEndDate
+        FROM semester
+    </select>
+
+    <!-- 현재 수강신청 기간 기준 학기 조회 -->
+    <select id="findCurrentSemester" resultType="com.ac.kr.academy.domain.semester.Semester">
+        SELECT id, name, enrollmentStartDate, enrollmentEndDate
+        FROM semester
+        WHERE SYSDATE BETWEEN enrollmentStartDate AND enrollmentEndDate
+    </select>
+
+    <!--  가장 최근 학기 조회 (수강신청 기간이 끝난 후 시간표 표시용) -->
+    <select id="findLatestSemester" resultType="com.ac.kr.academy.domain.semester.Semester">
+        SELECT id, name, enrollmentStartDate, enrollmentEndDate
+        FROM semester
+        ORDER BY enrollmentStartDate DESC
+            FETCH FIRST 1 ROWS ONLY
+    </select>
+
+    <!-- 학기 수정  -->
+    <update id="update" parameterType="com.ac.kr.academy.domain.semester.Semester">
+        UPDATE semester
+        SET
+            name = #{name},
+            enrollmentStartDate = #{enrollmentStartDate},
+            enrollmentEndDate = #{enrollmentEndDate}
+        WHERE id =#{id}
+    </update>
+
+    <!-- 학기 삭제   -->
+    <delete id="deleteById">
+        DELETE FROM semester WHERE id = #{id}
+    </delete>
+</mapper>

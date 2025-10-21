@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ac.kr.academy.mapper.notification.NotificationMapper">
+    <resultMap id="notificationMap" type="com.ac.kr.academy.domain.notification.Notification">
+        <id property="notiId" column="noti_id" />
+        <result property="notiType" column="noti_type" />
+        <result property="targetId" column="target_id" />
+        <result property="createdAt" column="created_at" />
+        <result property="title" column="title" />
+        <result property="isResolved" column="is_resolved" />
+        <result property="relatedId" column="related_id" />
+        <result property="gradeId" column="grade_id" />
+        <result property="noticeId" column="notice_id" />
+    </resultMap>
+
+    <insert id="insertNotification" parameterType="com.ac.kr.academy.domain.notification.Notification">
+        <selectKey keyProperty="notiId" order="BEFORE" resultType="long">
+            SELECT notification_seq.NEXTVAL FROM dual
+        </selectKey>
+        INSERT INTO notification (
+            noti_id, noti_type, target_id, created_at, title, is_resolved,
+            grade_id, notice_id, related_id
+        ) VALUES (
+                  #{notiId}, #{notiType}, #{targetId}, SYSDATE, #{title}, 0,
+                  #{gradeId}, #{noticeId}, #{relatedId}
+        )
+    </insert>
+
+    <select id="getNotificationsByUserId" resultMap="notificationMap">
+        SELECT * FROM notification
+        WHERE target_id = #{targetId}
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 미확인 알람 개수 -->
+    <select id="countUnresolved" parameterType="long" resultType="int">
+        SELECT COUNT(*)
+        FROM notification
+        WHERE target_id = #{targetId}
+        AND is_resolved = 0
+    </select>
+
+    <update id="markAsResolved">
+        UPDATE notification
+        SET is_resolved = 1
+        WHERE noti_id = #{notiId}
+    </update>
+
+    <!-- 읽은 알림 전체 삭제 -->
+    <delete id="deleteResolvedByUserId">
+        DELETE FROM notification
+        WHERE target_id = #{targetId}
+        AND is_resolved = 1
+    </delete>
+
+</mapper>
