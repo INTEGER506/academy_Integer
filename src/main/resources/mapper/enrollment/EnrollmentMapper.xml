@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ac.kr.academy.mapper.enrollment.EnrollmentMapper">
+
+    <resultMap id="courseDayTimeDTOMap" type="com.ac.kr.academy.dto.course.CourseDayTimeDTO">
+        <id property="courseId" column="course_id"/>
+        <result property="subjectName" column="subject_name"/>
+        <result property="professorName" column="professor_name"/>
+        <result property="dayOfWeek" column="day_of_week"/>
+        <result property="time" column="time"/>
+        <result property="place" column="place"/>
+    </resultMap>
+
+    <resultMap id="enrollmentListDTOMap" type="com.ac.kr.academy.dto.enrollment.EnrollmentListResponseDTO">
+        <id property="enrollmentId" column="enrollment_id"/>
+        <result property="id" column="course_id"/>
+        <result property="deptName" column="dept_name"/>
+        <result property="professorId" column="professor_id"/>
+        <result property="subjectName" column="subject_name"/>
+        <result property="professorName" column="professor_name"/>
+        <result property="semesterName" column="semester_name"/>
+        <result property="capacity" column="capacity"/>
+        <result property="numOfStudent" column="num_of_student"/>
+        <result property="dayOfWeek" column="day_of_week"/>
+        <result property="time" column="time"/>
+        <result property="place" column="place"/>
+        <result property="status" column="status"/>
+        <result property="credit" column="credit"/>
+        <result property="isEnrolled" column="isEnrolled"/>
+        <result property="applicationStatus" column="application_status"/>
+        <result property="canEnroll" column="can_enroll"/>
+    </resultMap>
+
+    <!-- 수강 신청 저장 -->
+    <insert id="save">
+        <selectKey keyProperty="id" order="BEFORE" resultType="long">
+            SELECT enrollment_seq.NEXTVAL FROM dual
+        </selectKey>
+        INSERT INTO enrollment (
+        id, course_id, student_id
+        )
+        VALUES (
+        #{id}, #{courseId}, #{studentId}
+        )
+    </insert>
+
+    <!-- 중복 확인 -->
+    <select id="findByCourseIdAndStudentId" resultType="com.ac.kr.academy.domain.enrollment.Enrollment">
+        SELECT id, course_id, student_id
+        FROM enrollment
+        WHERE course_id = #{courseId}
+          AND student_id = #{studentId}
+    </select>
+
+    <!-- 수강 취소 -->
+    <delete id="deleteByCourseIdAndStudentId">
+        DELETE FROM enrollment
+        WHERE course_id = #{courseId}
+          AND student_id = #{studentId}
+    </delete>
+
+    <delete id="deleteByCourseId">
+        DELETE FROM enrollment
+        WHERE course_id = #{courseId}
+    </delete>
+
+    <!-- 강의에 수강 신청한 학생 수 조회 -->
+    <select id="countEnrollmentsByCourseId" resultType="int">
+        SELECT COUNT(*)
+        FROM enrollment
+        WHERE course_id = #{courseId}
+    </select>
+
+    <!-- 총 학점 -->
+    <select id="findTotalCreditsByStudentId" resultType="int">
+        SELECT COALESCE(SUM(s.credit), 0)
+        FROM enrollment e
+                 JOIN course c ON e.course_id = c.id
+                 JOIN subject s ON c.subject_id = s.id
+        WHERE e.student_id = #{studentId}
+    </select>
+
+    <!-- 학생 시간표 조회 -->
+    <select id="findStudentTimeTable" resultMap="courseDayTimeDTOMap">
+        SELECT
+            c.id AS course_id,
+            s.name AS subject_name,
+            u.name AS professor_name,
+            c.day_of_week AS day_of_week,
+            c.time AS time,
+            c.place AS place
+        FROM enrollment e
+            JOIN course c ON e.course_id = c.id
+            JOIN subject s ON c.subject_id = s.id
+            JOIN professor p ON c.professor_id = p.id
+            JOIN users u ON p.user_id = u.id
+        WHERE e.student_id = #{studentId}
+          AND c.semester_id = #{semesterId}
+    </select>
+
+    <!-- 특정 강의를 수강 중인 학생 ID 목록 -->
+    <select id="findStudentIdsByCourseId" resultType="long">
+        SELECT student_id
+        FROM enrollment
+        WHERE course_id = #{courseId}
+    </select>
+
+    <!-- 검색 조건 -->
+    <sql id="searchConditions">
+        <if test="pageRequestDTO.searchKeyword != null and pageRequestDTO.searchKeyword != ''">
+            <choose>
+                <when test="pageRequestDTO.searchType == 'subject'">
+                    AND s.name LIKE '%' || #{pageRequestDTO.searchKeyword} || '%'
+                </when>
+                <when test="pageRequestDTO.searchType == 'professor'">
+                    AND u.name LIKE '%' || #{pageRequestDTO.searchKeyword} || '%'
+                </when>
+                <when test="pageRequestDTO.searchType == 'dept'">
+                    AND d.dept_name LIKE '%' || #{pageRequestDTO.searchKeyword} || '%'
+                </when>
+                <otherwise>
+                    AND (
+                    s.name LIKE '%' || #{pageRequestDTO.searchKeyword} || '%'
+                    OR u.name LIKE '%' || #{pageRequestDTO.searchKeyword} || '%'
+                    OR d.dept_name LIKE '%' || #{pageRequestDTO.searchKeyword} || '%'
+                    )
+                </otherwise>
+            </choose>
+        </if>
+    </sql>
+
+    <!-- 수강신청 가능한 강의 개수 -->
+    <select id="countAvailableCourses" resultType="long">
+        SELECT COUNT(c.id)
+        FROM course c
+        JOIN subject s ON c.subject_id = s.id
+        JOIN dept d ON s.dept_id = d.id
+        JOIN professor p ON c.professor_id = p.id
+        JOIN users u ON p.user_id = u.id
+        <where>
+            c.semester_id = #{currentSemesterId}
+            AND c.status = 'OPEN'
+            <include refid="searchConditions"/>
+        </where>
+    </select>
+
+    <!-- 수강신청 가능한 강의 목록 -->
+    <select id="selectAvailableCoursesPaged" resultMap="enrollmentListDTOMap">
+        SELECT *
+        FROM (
+        SELECT
+        c.id AS course_id,
+        d.dept_name AS dept_name,
+        p.id AS professor_id,
+        s.name AS subject_name,
+        u.name AS professor_name,
+        sem.name AS semester_name,
+        c.capacity AS capacity,
+        c.num_of_student AS num_of_student,
+        c.day_of_week AS day_of_week,
+        c.time AS time,
+        c.place AS place,
+        c.status AS status,
+        s.credit AS credit,
+
+        <!-- 이미 신청한 강의 여부 -->
+        CASE
+        WHEN EXISTS (
+        SELECT 1 FROM enrollment e
+        WHERE e.course_id = c.id AND e.student_id = #{studentId}
+        ) THEN 1 ELSE 0
+        END AS isEnrolled,
+
+        ROW_NUMBER() OVER (ORDER BY c.id DESC) AS rn
+        FROM course c
+        JOIN subject s ON c.subject_id = s.id
+        JOIN dept d ON s.dept_id = d.id
+        JOIN professor p ON c.professor_id = p.id
+        JOIN users u ON p.user_id = u.id
+        JOIN semester sem ON c.semester_id = sem.id
+        WHERE c.semester_id = #{currentSemesterId}
+        AND c.status = 'OPEN'
+        <include refid="searchConditions"/>
+        )
+        WHERE rn BETWEEN #{pageRequestDTO.start} AND #{pageRequestDTO.end}
+    </select>
+
+    <!-- 내 강의 신청 목록 -->
+    <select id="selectAllMyEnrolledCourses" resultMap="enrollmentListDTOMap">
+        SELECT
+            e.id AS enrollment_id,
+            c.id AS course_id,
+            d.dept_name AS dept_name,
+            s.name AS subject_name,
+            u.name AS professor_name,
+            sem.name AS semester_name,
+            c.day_of_week AS day_of_week,
+            c.time AS time,
+        c.place AS place,
+        s.credit AS credit,
+        c.capacity AS capacity,
+        c.num_of_student AS num_of_student,
+        c.status AS status,
+        1 AS isEnrolled
+        FROM enrollment e
+            JOIN course c ON e.course_id = c.id
+            JOIN subject s ON c.subject_id = s.id
+            JOIN dept d ON s.dept_id = d.id
+            JOIN professor p ON c.professor_id = p.id
+            JOIN users u ON p.user_id = u.id
+            JOIN semester sem ON c.semester_id = sem.id
+        WHERE e.student_id = #{studentId}
+        ORDER BY c.id DESC
+    </select>
+
+    <!-- 단일 조회 -->
+    <select id="findById" resultType="com.ac.kr.academy.domain.enrollment.Enrollment">
+        SELECT id, course_id, student_id
+        FROM enrollment
+        WHERE id = #{id}
+    </select>
+
+    <select id="findEnrollmentsByCourseId" resultType="com.ac.kr.academy.domain.enrollment.Enrollment">
+        SELECT id, course_id, student_id
+        FROM enrollment
+        WHERE course_id = #{courseId}
+    </select>
+
+    <select id="findAllEnrollments" resultType="com.ac.kr.academy.domain.enrollment.Enrollment">
+        SELECT id, course_id, student_id
+        FROM enrollment
+    </select>
+
+    <!-- 학생 ID로 수강 신청 내역 조회 -->
+    <select id="findByStudentId" parameterType="long" resultType="com.ac.kr.academy.domain.enrollment.Enrollment">
+        SELECT
+            id,
+            course_id,
+            student_id
+        FROM enrollment
+        WHERE student_id = #{studentId}
+    </select>
+</mapper>
