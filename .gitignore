@@ -48,4 +48,4 @@ build
 
 #로그
 /logs/
-/*.log
+/*.log**/application.properties
